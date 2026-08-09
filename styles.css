@@ -1,0 +1,923 @@
+/* ===== MindMap (.xmind) 插件样式 ===== */
+
+.mm-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  /* 防御 Obsidian 主题在容器上叠加意外边距 */
+  min-height: 0;
+}
+
+.mm-view.mm-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: var(--background-primary);
+}
+
+/* ---------- 工具栏 ---------- */
+
+.mm-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.mm-toolbar button {
+  cursor: pointer;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.mm-toolbar button:hover {
+  background: var(--interactive-hover);
+}
+
+/* ---------- 图标按钮（紧凑方形） ---------- */
+
+.mm-tb-action {
+  width: 30px !important;
+  height: 30px !important;
+  padding: 5px !important;
+  min-width: 30px;
+  flex-shrink: 0;
+}
+
+.mm-tb-more-btn {
+  width: 30px !important;
+  height: 30px !important;
+  padding: 5px !important;
+  min-width: 30px;
+  flex-shrink: 0;
+}
+
+.mm-tb-more-btn.is-active {
+  background: var(--interactive-hover);
+}
+
+/* ---------- 更多下拉菜单项 ---------- */
+
+.mm-tb-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  white-space: nowrap;
+  border-radius: 4px !important;
+}
+
+.mm-tb-menu-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mm-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 8px;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+/* ---------- 主区域：画布 + 侧栏 ---------- */
+
+.mm-main {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.mm-canvas {
+  position: relative;
+  flex: 1 1 auto;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  background:
+    radial-gradient(circle, var(--background-modifier-border) 1px, transparent 1px)
+    0 0 / 22px 22px;
+  background-color: var(--background-primary);
+}
+
+.mm-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  margin: 0;
+  padding: 0;
+  cursor: grab;
+  touch-action: none;
+}
+
+.mm-view .mm-canvas {
+  touch-action: none;
+}
+
+.mm-svg:active {
+  cursor: grabbing;
+}
+
+.mm-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mm-edge {
+  fill: none;
+  stroke: var(--text-faint);
+  stroke-width: 2;
+}
+
+.mm-node {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 2px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 14px;
+  line-height: 1.2;
+  cursor: move;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  user-select: none;
+  position: relative;
+}
+
+.mm-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  cursor: ew-resize;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity .12s ease;
+}
+.mm-resize-handle.right { right: 0; }
+.mm-resize-handle.left { left: 0; }
+.mm-node:hover .mm-resize-handle { opacity: 1; }
+.mm-resize-handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 26px;
+  border-radius: 3px;
+  background: var(--interactive-accent);
+  opacity: 0;
+  transition: opacity .12s ease;
+}
+.mm-resize-handle:hover::after { opacity: .85; }
+
+.mm-node.is-root {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+  font-weight: 600;
+}
+
+.mm-node.is-selected {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px var(--interactive-accent);
+}
+
+.mm-node.is-collapsed {
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.mm-node.is-dragging {
+  opacity: 0.85;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.mm-node-markers {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.mm-node-text {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mm-collapse-dot {
+  fill: var(--background-primary);
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+  cursor: pointer;
+}
+
+.mm-collapse-dot.collapsed {
+  fill: var(--text-muted);
+}
+
+.mm-empty {
+  fill: var(--text-muted);
+  font-size: 14px;
+}
+
+.mm-edit-input {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid var(--interactive-accent);
+  border-radius: 8px;
+  padding: 4px 8px;
+  text-align: center;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  outline: none;
+  z-index: 50;
+}
+
+.mm-view.is-mobile .mm-edit-input {
+  font-size: 16px; /* 防止 iOS 缩放页面 */
+  min-height: 32px;
+  min-width: 120px;
+  max-width: calc(100% - 16px);
+}
+
+/* 新建思维导图弹窗的输入框 */
+.mm-filename-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 6px 0;
+}
+
+/* ---------- 侧栏 ---------- */
+
+.mm-side-panel {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.mm-side-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+}
+
+.mm-side-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+
+.mm-side-tab:hover {
+  color: var(--text-normal);
+}
+
+.mm-side-tab.is-active {
+  color: var(--interactive-accent);
+  border-bottom-color: var(--interactive-accent);
+  font-weight: 600;
+}
+
+.mm-side-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.mm-side-section {
+  margin-bottom: 18px;
+}
+
+.mm-side-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ---------- 布局缩略图 ---------- */
+
+.mm-thumbs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mm-thumb {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 6px 4px 4px;
+  cursor: pointer;
+  background: var(--background-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.15s;
+}
+
+.mm-thumb:hover {
+  border-color: var(--text-muted);
+}
+
+.mm-thumb.is-active {
+  border-color: var(--interactive-accent);
+  background: var(--background-modifier-hover);
+}
+
+.mm-thumb-svg {
+  width: 80px;
+  height: 50px;
+  display: block;
+}
+
+.mm-thumb-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  text-align: center;
+}
+
+.mm-thumb.is-active .mm-thumb-label {
+  color: var(--interactive-accent);
+  font-weight: 600;
+}
+
+/* ---------- 开关 ---------- */
+
+.mm-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.mm-toggle-label {
+  font-size: 13px;
+  color: var(--text-normal);
+  flex: 1;
+}
+
+.mm-toggle-switch {
+  width: 36px;
+  height: 20px;
+  border-radius: 12px;
+  background: var(--background-modifier-border);
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.mm-toggle-switch.is-on {
+  background: var(--interactive-accent);
+}
+
+.mm-toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--background-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: left 0.2s;
+}
+
+.mm-toggle-switch.is-on .mm-toggle-knob {
+  left: 18px;
+}
+
+/* ---------- 信息统计 ---------- */
+
+.mm-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+
+/* ---------- 标记面板 ---------- */
+
+.mm-marker-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 20px 8px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.mm-marker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+  background: var(--background-primary);
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+  gap: 8px;
+}
+
+.mm-marker-header-title {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mm-marker-header-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-normal);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mm-marker-clear {
+  cursor: pointer;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+}
+
+.mm-marker-clear:hover {
+  background: var(--interactive-hover);
+}
+
+.mm-marker-cat {
+  margin-bottom: 14px;
+}
+
+.mm-marker-cat-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mm-marker-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.mm-marker-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  cursor: pointer;
+  transition: all 0.12s;
+  padding: 2px;
+}
+
+.mm-marker-cell:hover {
+  border-color: var(--text-muted);
+  background: var(--background-modifier-hover);
+}
+
+.mm-marker-cell.is-active {
+  border-color: var(--interactive-accent);
+  background: var(--background-modifier-hover);
+  box-shadow: 0 0 0 2px var(--interactive-accent);
+}
+
+.mm-marker-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mm-marker-icon svg {
+  display: block;
+}
+
+/* ---------- 工具栏按钮激活态 ---------- */
+
+.mm-toolbar button.is-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+/* ---------- 节点内：贴纸 ---------- */
+
+.mm-node-stickers {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.mm-node-sticker {
+  display: inline-block;
+}
+
+/* ---------- 缩略图预览 (minimap) ---------- */
+
+.mm-minimap {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 200px;
+  height: 130px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  cursor: crosshair;
+  z-index: 5;
+}
+
+.mm-minimap-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------- 节点样式（侧栏） ---------- */
+
+.mm-node-style-name {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  background: var(--background-primary);
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.mm-swatches {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.mm-swatch {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  transition: transform 0.1s;
+}
+
+.mm-swatch:hover {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 2px var(--interactive-accent);
+}
+
+.mm-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mm-color-input {
+  width: 36px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  cursor: pointer;
+}
+
+.mm-picker-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.mm-style-btn {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  cursor: pointer;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 12px;
+}
+
+.mm-style-btn:hover {
+  background: var(--interactive-hover);
+}
+
+/* ---------- 贴纸面板 ---------- */
+
+.mm-sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+
+.mm-sticker-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.mm-sticker-cell:hover {
+  border-color: var(--text-muted);
+  background: var(--background-modifier-hover);
+}
+
+.mm-sticker-cell.is-active {
+  border-color: var(--interactive-accent);
+  background: var(--background-modifier-hover);
+  box-shadow: 0 0 0 2px var(--interactive-accent);
+}
+
+/* ---------- 工具栏：主按钮 + 更多下拉 ---------- */
+
+.mm-toolbar {
+  flex-wrap: nowrap;
+}
+
+.mm-toolbar-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.mm-toolbar-secondary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.mm-toolbar-more {
+  position: relative;
+}
+
+.mm-toolbar-more-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 150px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 60;
+  padding: 4px;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mm-toolbar-more.is-open .mm-toolbar-more-menu {
+  display: flex;
+}
+
+.mm-toolbar-more-menu button {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* ---------- 移动端适配 ---------- */
+
+.mm-view.is-mobile {
+  margin: 0;
+  padding: 0;
+}
+
+.mm-view.is-mobile .mm-hint {
+  display: none;
+}
+
+.mm-view.is-mobile .mm-toolbar {
+  padding: 4px 6px;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.mm-view.is-mobile .mm-toolbar-primary {
+  gap: 4px;
+}
+
+.mm-view.is-mobile .mm-toolbar button {
+  padding: 4px 7px;
+  font-size: 12px;
+}
+
+.mm-view.is-mobile .mm-tb-action,
+.mm-view.is-mobile .mm-tb-more-btn {
+  width: 28px !important;
+  height: 28px !important;
+  padding: 4px !important;
+  min-width: 28px;
+}
+
+.mm-view.is-mobile .mm-main {
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  /* iOS 上避免 safe-area 累积导致画布被刘海/底栏挤出可视区 */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-sizing: border-box;
+}
+
+.mm-view.is-mobile .mm-canvas {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 auto;
+  /* 让画布撑满父容器剩余空间，不再出现「画布与键盘间大块空白」 */
+  min-height: 0;
+}
+
+.mm-view.is-mobile .mm-side-panel {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 80vw;
+  max-width: 320px;
+  min-width: 260px;
+  z-index: 40;
+  border-left: 1px solid var(--background-modifier-border);
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.12);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.mm-view.is-mobile .mm-side-panel.is-hidden {
+  display: none;
+}
+
+.mm-view.is-mobile .mm-minimap {
+  width: 140px;
+  height: 90px;
+  right: 8px;
+  bottom: 8px;
+}
+
+.mm-view.is-mobile .mm-node {
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .mm-hint {
+    display: none;
+  }
+
+  .mm-toolbar {
+    padding: 4px 6px;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .mm-toolbar-primary {
+    gap: 4px;
+  }
+
+  .mm-toolbar button {
+    padding: 4px 7px;
+    font-size: 12px;
+  }
+
+  .mm-tb-action,
+  .mm-tb-more-btn {
+    width: 28px !important;
+    height: 28px !important;
+    padding: 4px !important;
+    min-width: 28px;
+  }
+
+  .mm-main {
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .mm-side-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 80vw;
+    max-width: 320px;
+    min-width: 260px;
+    z-index: 40;
+    border-left: 1px solid var(--background-modifier-border);
+    box-shadow: -2px 0 12px rgba(0, 0, 0, 0.12);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  .mm-side-panel.is-hidden {
+    display: none;
+  }
+
+  .mm-minimap {
+    width: 140px;
+    height: 90px;
+    right: 8px;
+    bottom: 8px;
+  }
+
+  .mm-node {
+    font-size: 13px;
+  }
+}
+
+/* 侧栏打开时的遮罩（移动端） */
+.mm-mobile-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: 35;
+}

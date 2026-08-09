@@ -1,0 +1,9 @@
+node_modules/
+*.js.map
+.DS_Store
+# 临时测试与生成脚本
+test-*.cjs
+test-*.ts
+gen-*.cjs
+# 内部工具记忆目录（不与仓库同步）
+.workbuddy/

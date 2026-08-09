@@ -1,0 +1,9 @@
+{
+  "id": "mindmap-xmind",
+  "name": "Mindmap Xmind",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "在 Obsidian 中查看与交互编辑 XMind 思维导图（.xmind 格式）",
+  "author": "WorkBuddy",
+  "isDesktopOnly": false
+}
