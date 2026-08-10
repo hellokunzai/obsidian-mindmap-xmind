@@ -116,4 +116,8 @@ mindmap-xmind/
 
 ## 许可证
 
-本插件按 Obsidian 社区插件惯例分发，供个人学习与使用。
+本插件以 **MIT 许可证** 发布，版权归作者所有。完整条款见仓库根目录的 [LICENSE](./LICENSE) 文件。
+
+### 第三方依赖
+
+- **[JSZip](https://github.com/Stuk/jszip)**（MIT 许可证）：用于在浏览器中解析与生成 `.xmind`（ZIP 格式）文件，已随本插件一并打包分发，遵守其原始许可证。
