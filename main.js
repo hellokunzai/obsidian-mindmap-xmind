@@ -4185,7 +4185,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     if (this.nodeEls.has(id)) {
       this.nodeEls.get(id).classList.add("is-selected");
     }
-    this.switchTab("markers");
+    this.renderSidePanel();
   }
   showContextMenu(e, id) {
     const node = this.root ? findTopic(this.root, id) : null;

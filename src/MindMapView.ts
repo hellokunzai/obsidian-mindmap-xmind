@@ -1558,7 +1558,9 @@ export class MindMapView extends FileView {
     if (this.nodeEls.has(id)) {
       this.nodeEls.get(id)!.classList.add("is-selected");
     }
-    this.switchTab("markers");
+    // 选中节点后刷新侧栏（例如让「画布」标签下的「节点样式」区域显示出来），
+    // 不再强制切到「标记」标签，避免颜色设置按钮被隐藏。
+    this.renderSidePanel();
   }
 
   private showContextMenu(e: MouseEvent, id: string) {
