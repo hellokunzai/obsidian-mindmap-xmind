@@ -374,10 +374,17 @@ export class MindMapView extends FileView {
     cls?: string
   ): HTMLButtonElement {
     const btn = parent.createEl("button", { cls });
-    btn.innerHTML = svgIcon;
+    this.setSvg(btn, svgIcon);
     btn.setAttribute("aria-label", title);
     btn.addEventListener("click", onClick);
     return btn;
+  }
+
+  /** 用 DOMParser 安全地把 SVG 字符串插入元素（避免直接写 HTML，消除动态注入风险） */
+  private setSvg(el: HTMLElement, svg: string) {
+    const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
+    const svgEl = doc.querySelector("svg");
+    if (svgEl) el.appendChild(document.importNode(svgEl, true));
   }
 
   // 溢出检测相关引用
@@ -418,7 +425,7 @@ export class MindMapView extends FileView {
         id: "minimap", svgIcon: MindMapView.ICONS.minimap, title: "缩略图",
         onClick: () => {
           this.showMinimap = !this.showMinimap;
-          this.minimap.style.display = this.showMinimap ? "" : "none";
+          this.minimap.setCssStyles({ display: this.showMinimap ? "" : "none" })
           this.updateToolbarState();
         },
         update: (btn) => btn.classList.toggle("is-active", this.showMinimap),
@@ -452,7 +459,9 @@ export class MindMapView extends FileView {
     // 为每个操作创建对应的菜单项（默认隐藏在 more 菜单中）
     for (const action of this.allToolbarActions) {
       action.menuItem = this.toolbarMoreMenu.createEl("button", { cls: "mm-tb-menu-item" });
-      action.menuItem.innerHTML = action.svgIcon + `<span>${action.title}</span>`;
+      this.setSvg(action.menuItem, action.svgIcon);
+      const labelSpan = action.menuItem.createSpan();
+      labelSpan.textContent = action.title;
       action.menuItem.setAttribute("aria-label", action.title);
       action.menuItem.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -546,17 +555,17 @@ export class MindMapView extends FileView {
         const action = this.allToolbarActions[i];
         const showInline = i < visibleCount;
         if (action.inlineBtn) {
-          action.inlineBtn.style.display = showInline ? "" : "none";
+          action.inlineBtn.setCssStyles({ display: showInline ? "" : "none" })
         }
         if (action.menuItem) {
-          action.menuItem.style.display = showInline ? "none" : "";
+          action.menuItem.setCssStyles({ display: showInline ? "none" : "" })
         }
       }
 
       // 控制更多按钮显隐
       if (this.toolbarMoreWrap && this.toolbarMoreBtn) {
         const hasOverflowItems = visibleCount < this.allToolbarActions.length;
-        this.toolbarMoreWrap.style.display = hasOverflowItems ? "" : "none";
+        this.toolbarMoreWrap.setCssStyles({ display: hasOverflowItems ? "" : "none" })
       }
     };
 
@@ -630,7 +639,7 @@ export class MindMapView extends FileView {
     this.minimap.appendChild(this.minimapSvg);
     this.minimap.addEventListener("mousedown", this.onMiniDown);
     this.minimap.addEventListener("touchstart", this.onMiniTouchStart, { passive: false });
-    this.minimap.style.display = this.showMinimap ? "" : "none";
+    this.minimap.setCssStyles({ display: this.showMinimap ? "" : "none" })
 
     this.svg.addEventListener("wheel", this.onWheel, { passive: false });
     this.svg.addEventListener("mousedown", this.onMouseDown);
@@ -638,9 +647,9 @@ export class MindMapView extends FileView {
 
     // 右侧栏（移动端默认收起）
     this.sidePanel = main.createDiv({ cls: "mm-side-panel" });
-    this.sidePanel.style.width = SIDE_PANEL_W + "px";
+    this.sidePanel.setCssStyles({ width: SIDE_PANEL_W + "px" })
     if (this.isMobile) {
-      this.sidePanel.style.display = "none";
+      this.sidePanel.setCssStyles({ display: "none" })
       this.sidePanel.addClass("is-hidden");
     }
     this.updateToolbarState();
@@ -686,7 +695,7 @@ export class MindMapView extends FileView {
 
   private toggleSidePanel() {
     const willShow = this.sidePanel.style.display === "none";
-    this.sidePanel.style.display = willShow ? "" : "none";
+    this.sidePanel.setCssStyles({ display: willShow ? "" : "none" })
     this.sidePanel.classList.toggle("is-hidden", !willShow);
 
     if (this.isMobile) {
@@ -695,9 +704,9 @@ export class MindMapView extends FileView {
           this.mobileOverlay = this.canvas.createDiv({ cls: "mm-mobile-overlay" });
           this.mobileOverlay.addEventListener("click", () => this.toggleSidePanel());
         }
-        this.mobileOverlay.style.display = "";
+        this.mobileOverlay.setCssStyles({ display: "" })
       } else if (this.mobileOverlay) {
-        this.mobileOverlay.style.display = "none";
+        this.mobileOverlay.setCssStyles({ display: "none" })
       }
     }
 
@@ -752,7 +761,7 @@ export class MindMapView extends FileView {
   // ---------- 加载 / 序列化 ----------
 
   private async loadMap() {
-    this.overlay.innerHTML = "";
+    this.overlay.empty();
     if (!this.file) {
       this.renderEmpty();
       return;
@@ -818,7 +827,7 @@ export class MindMapView extends FileView {
 
   private renderEmpty() {
     while (this.g.firstChild) this.g.removeChild(this.g.firstChild);
-    this.overlay.innerHTML = "";
+    this.overlay.empty();
     const t = svgEl("text", {
       x: "20",
       y: "40",
@@ -1251,7 +1260,7 @@ export class MindMapView extends FileView {
 
   private render() {
     while (this.g.firstChild) this.g.removeChild(this.g.firstChild);
-    this.overlay.innerHTML = "";
+    this.overlay.empty();
     this.nodeEls.clear();
     if (!this.root) return;
 
@@ -1270,7 +1279,7 @@ export class MindMapView extends FileView {
         });
         // 用内联 style 覆盖 styles.css 里的 .mm-edge{stroke:...}：SVG presentation attribute
         // 的优先级低于 CSS 规则，只有内联样式能稳定盖住（影响：彩虹分支、_color 节点配色）
-        if (color) path.style.stroke = color;
+        if (color) path.setCssStyles({ stroke: color })
         this.g.appendChild(path);
       });
     }
@@ -1343,13 +1352,13 @@ export class MindMapView extends FileView {
       (isRoot ? " is-root" : "") +
       (isSelected ? " is-selected" : "") +
       (isCollapsed ? " is-collapsed" : "");
-    div.style.width = this.nodeWidth(node) + "px";
-    div.style.height = this.nodeBoxHeight(node) + "px";
-    div.style.fontSize = this.fontSizeOf(this.depthOf(node)) + "px";
+    div.setCssStyles({ width: this.nodeWidth(node) + "px" })
+    div.setCssStyles({ height: this.nodeBoxHeight(node) + "px" })
+    div.setCssStyles({ fontSize: this.fontSizeOf(this.depthOf(node)) + "px" })
     if (col) {
-      div.style.background = col.fill;
-      div.style.color = col.text;
-      div.style.borderColor = col.fill;
+      div.setCssStyles({ background: col.fill })
+      div.setCssStyles({ color: col.text })
+      div.setCssStyles({ borderColor: col.fill })
     }
 
     // 贴纸行（emoji）
@@ -1465,7 +1474,7 @@ export class MindMapView extends FileView {
 
     const apply = (newW: number): number => {
       newW = Math.max(MIN_NODE_W, Math.min(MAX_NODE_W, Math.round(newW)));
-      div.style.width = newW + "px";
+      div.setCssStyles({ width: newW + "px" })
       if (fo) {
         fo.setAttribute("width", String(newW));
         if (parent) {
@@ -1540,7 +1549,7 @@ export class MindMapView extends FileView {
     const up = (ev: PointerEvent) => {
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
-      document.body.style.userSelect = "";
+      document.body.setCssStyles({ userSelect: "" })
       const d = self.nodeEls.get(id);
       if (d) d.classList.remove("is-dragging");
       if (!dragging) return; // 未越过阈值 → 视为点击，不写偏移
@@ -1552,7 +1561,7 @@ export class MindMapView extends FileView {
       self.refreshHeader();
       self.maybeAutoSave();
     };
-    document.body.style.userSelect = "none";
+    document.body.setCssStyles({ userSelect: "none" })
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
   }
@@ -1753,12 +1762,12 @@ export class MindMapView extends FileView {
     input.value = node.title ?? "";
     const editDepth = this.depthOf(node);
     const editBoxH = this.boxHeightOf(editDepth);
-    input.style.left = this.tx + (pos.x - this.nodeWidth(node) / 2) * this.scale + "px";
-    input.style.top = this.ty + (pos.y - editBoxH / 2) * this.scale + "px";
-    input.style.width = this.nodeWidth(node) * this.scale + "px";
-    input.style.height = editBoxH * this.scale + "px";
-    input.style.fontSize = this.fontSizeOf(editDepth) * this.scale + "px";
-    input.style.pointerEvents = "auto";
+    input.setCssStyles({ left: this.tx + (pos.x - this.nodeWidth(node) / 2) * this.scale + "px" })
+    input.setCssStyles({ top: this.ty + (pos.y - editBoxH / 2) * this.scale + "px" })
+    input.setCssStyles({ width: this.nodeWidth(node) * this.scale + "px" })
+    input.setCssStyles({ height: editBoxH * this.scale + "px" })
+    input.setCssStyles({ fontSize: this.fontSizeOf(editDepth) * this.scale + "px" })
+    input.setCssStyles({ pointerEvents: "auto" })
     this.overlay.appendChild(input);
     input.focus({ preventScroll: true });
     input.select();
@@ -1835,13 +1844,11 @@ export class MindMapView extends FileView {
       ".mm-edit-input"
     ) as HTMLInputElement | null;
     if (input) {
-      input.style.left =
-        this.tx + (pos.x - this.nodeWidth(node) / 2) * editScale + "px";
-      input.style.top =
-        this.ty + (pos.y - this.nh / 2) * editScale + "px";
-      input.style.width = this.nodeWidth(node) * editScale + "px";
-      input.style.height = nh + "px";
-      input.style.fontSize = 14 * editScale + "px";
+      input.setCssStyles({ left: this.tx + (pos.x - this.nodeWidth(node) / 2) * editScale + "px" })
+      input.setCssStyles({ top: this.ty + (pos.y - this.nh / 2) * editScale + "px" })
+      input.setCssStyles({ width: this.nodeWidth(node) * editScale + "px" })
+      input.setCssStyles({ height: nh + "px" })
+      input.setCssStyles({ fontSize: 14 * editScale + "px" })
     }
   }
 
@@ -1858,13 +1865,13 @@ export class MindMapView extends FileView {
     const keyboardShown = window.innerHeight - availH > 32;
     if (!keyboardShown) {
       // 键盘已收起，还原容器高度（避免在已展开状态下被卡在编辑态高度）
-      if (this.contentEl.style.height) this.contentEl.style.height = "";
+      if (this.contentEl.style.height) this.contentEl.setCssStyles({ height: "" })
     } else {
       // 键盘弹起：mm-view 顶部可能因 adjustPan 滚动到屏幕外，clamp 到 0
       const rawTop = this.contentEl.getBoundingClientRect().top;
       const top = Math.max(0, rawTop);
       const visibleH = Math.max(160, availH - top);
-      this.contentEl.style.height = visibleH + "px";
+      this.contentEl.setCssStyles({ height: visibleH + "px" })
     }
     // 容器高度变化后下一帧再居中一次，确保 rect 已更新
     requestAnimationFrame(() => {
@@ -1902,7 +1909,7 @@ export class MindMapView extends FileView {
       this.editRefocusTimer = undefined;
     }
     // 还原容器高度（编辑前状态由 cleanup() 负责还原平移/缩放）
-    this.contentEl.style.height = "";
+    this.contentEl.setCssStyles({ height: "" })
   }
 
   // ---------- 平移 / 缩放 ----------
@@ -2395,7 +2402,7 @@ export class MindMapView extends FileView {
         const swatches = section3.createDiv({ cls: "mm-swatches" });
         for (const c of NODE_PALETTE) {
           const sw = swatches.createDiv({ cls: "mm-swatch" });
-          sw.style.background = c;
+          sw.setCssStyles({ background: c })
           sw.addEventListener("click", () => this.setNodeColor(c));
         }
         // 取色器

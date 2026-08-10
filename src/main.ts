@@ -171,11 +171,13 @@ class MindMapSettingTab extends PluginSettingTab {
       });
 
     containerEl.createDiv({ cls: "setting-item-description" }, (div) => {
-      div.innerHTML = `
-        <p style="margin-top:12px;color:var(--text-muted);font-size:13px;">
-        当前间隔：<strong>${this.plugin.settings.autoSaveInterval} 秒</strong><br>
-        快捷键：Ctrl+S 手动保存 · Tab 添加子主题 · Enter 添加同级 · Delete 删除节点
-        </p>`;
+      const p = div.createEl("p");
+      p.setCssStyles({ marginTop: "12px", color: "var(--text-muted)", fontSize: "13px" });
+      p.append("当前间隔：");
+      const strong = p.createEl("strong");
+      strong.textContent = `${this.plugin.settings.autoSaveInterval} 秒`;
+      p.appendChild(document.createElement("br"));
+      p.append("快捷键：Ctrl+S 手动保存 · Tab 添加子主题 · Enter 添加同级 · Delete 删除节点");
     });
   }
 }
@@ -207,13 +209,13 @@ class FileNameModal extends Modal {
       cls: "setting-item-description",
       text: "将创建 .xmind 文件，可在 Obsidian 中双击打开编辑。",
     });
-    hint.style.margin = "8px 0";
+    hint.setCssStyles({ margin: "8px 0" })
 
     const row = contentEl.createDiv({ cls: "modal-button-row" });
     const ok = row.createEl("button", { text: "创建", cls: "mod-cta" });
     const cancel = row.createEl("button", { text: "取消" });
     // mod-cta 在无主题变量时可能没底色，补一个显式样式
-    ok.style.marginRight = "8px";
+    ok.setCssStyles({ marginRight: "8px" })
 
     const submit = () => {
       const v = input.value.trim();

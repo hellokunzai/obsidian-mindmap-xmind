@@ -2712,18 +2712,18 @@ function hasMarker(topic, id) {
 function renderMarkerIcon(def, size = 14) {
   const wrap = document.createElement("span");
   wrap.className = "mm-marker-icon";
-  wrap.style.width = size + "px";
-  wrap.style.height = size + "px";
+  wrap.setCssStyles({ width: size + "px" });
+  wrap.setCssStyles({ height: size + "px" });
   wrap.title = def.label;
   if (def.symbol) {
     wrap.textContent = def.symbol;
-    wrap.style.color = def.color;
-    wrap.style.fontSize = Math.round(size * 0.85) + "px";
-    wrap.style.lineHeight = "1";
-    wrap.style.display = "inline-flex";
-    wrap.style.alignItems = "center";
-    wrap.style.justifyContent = "center";
-    wrap.style.fontWeight = "600";
+    wrap.setCssStyles({ color: def.color });
+    wrap.setCssStyles({ fontSize: Math.round(size * 0.85) + "px" });
+    wrap.setCssStyles({ lineHeight: "1" });
+    wrap.setCssStyles({ display: "inline-flex" });
+    wrap.setCssStyles({ alignItems: "center" });
+    wrap.setCssStyles({ justifyContent: "center" });
+    wrap.setCssStyles({ fontWeight: "600" });
   } else if (def.svgPath) {
     const NS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(NS, "svg");
@@ -2736,14 +2736,14 @@ function renderMarkerIcon(def, size = 14) {
     svg.appendChild(path);
     wrap.appendChild(svg);
   } else if (def.shape === "triangle") {
-    wrap.style.background = def.color;
-    wrap.style.clipPath = "polygon(50% 0, 100% 100%, 0 100%)";
+    wrap.setCssStyles({ background: def.color });
+    wrap.setCssStyles({ clipPath: "polygon(50% 0, 100% 100%, 0 100%)" });
   } else if (def.shape === "square") {
-    wrap.style.background = def.color;
-    wrap.style.borderRadius = "2px";
+    wrap.setCssStyles({ background: def.color });
+    wrap.setCssStyles({ borderRadius: "2px" });
   } else if (def.shape === "diamond") {
-    wrap.style.background = def.color;
-    wrap.style.transform = "rotate(45deg)";
+    wrap.setCssStyles({ background: def.color });
+    wrap.setCssStyles({ transform: "rotate(45deg)" });
   } else {
     const NS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(NS, "svg");
@@ -3195,10 +3195,16 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   /** 创建一个带图标的工具栏按钮 */
   createIconBtn(parent, svgIcon, title, onClick, cls) {
     const btn = parent.createEl("button", { cls });
-    btn.innerHTML = svgIcon;
+    this.setSvg(btn, svgIcon);
     btn.setAttribute("aria-label", title);
     btn.addEventListener("click", onClick);
     return btn;
+  }
+  /** 用 DOMParser 安全地把 SVG 字符串插入元素（避免直接写 HTML，消除动态注入风险） */
+  setSvg(el, svg) {
+    const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
+    const svgEl2 = doc.querySelector("svg");
+    if (svgEl2) el.appendChild(document.importNode(svgEl2, true));
   }
   createToolbar(parent) {
     const toolbar = parent.createDiv({ cls: "mm-toolbar" });
@@ -3227,7 +3233,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
         title: "\u7F29\u7565\u56FE",
         onClick: () => {
           this.showMinimap = !this.showMinimap;
-          this.minimap.style.display = this.showMinimap ? "" : "none";
+          this.minimap.setCssStyles({ display: this.showMinimap ? "" : "none" });
           this.updateToolbarState();
         },
         update: (btn) => btn.classList.toggle("is-active", this.showMinimap)
@@ -3264,7 +3270,9 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     this.toolbarMoreMenu = this.toolbarMoreWrap.createDiv({ cls: "mm-toolbar-more-menu" });
     for (const action of this.allToolbarActions) {
       action.menuItem = this.toolbarMoreMenu.createEl("button", { cls: "mm-tb-menu-item" });
-      action.menuItem.innerHTML = action.svgIcon + `<span>${action.title}</span>`;
+      this.setSvg(action.menuItem, action.svgIcon);
+      const labelSpan = action.menuItem.createSpan();
+      labelSpan.textContent = action.title;
       action.menuItem.setAttribute("aria-label", action.title);
       action.menuItem.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -3336,15 +3344,15 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
         const action = this.allToolbarActions[i];
         const showInline = i < visibleCount;
         if (action.inlineBtn) {
-          action.inlineBtn.style.display = showInline ? "" : "none";
+          action.inlineBtn.setCssStyles({ display: showInline ? "" : "none" });
         }
         if (action.menuItem) {
-          action.menuItem.style.display = showInline ? "none" : "";
+          action.menuItem.setCssStyles({ display: showInline ? "none" : "" });
         }
       }
       if (this.toolbarMoreWrap && this.toolbarMoreBtn) {
         const hasOverflowItems = visibleCount < this.allToolbarActions.length;
-        this.toolbarMoreWrap.style.display = hasOverflowItems ? "" : "none";
+        this.toolbarMoreWrap.setCssStyles({ display: hasOverflowItems ? "" : "none" });
       }
     };
     this.overflowResizeObserver = new ResizeObserver(() => {
@@ -3399,14 +3407,14 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     this.minimap.appendChild(this.minimapSvg);
     this.minimap.addEventListener("mousedown", this.onMiniDown);
     this.minimap.addEventListener("touchstart", this.onMiniTouchStart, { passive: false });
-    this.minimap.style.display = this.showMinimap ? "" : "none";
+    this.minimap.setCssStyles({ display: this.showMinimap ? "" : "none" });
     this.svg.addEventListener("wheel", this.onWheel, { passive: false });
     this.svg.addEventListener("mousedown", this.onMouseDown);
     this.svg.addEventListener("touchstart", this.onTouchStart, { passive: false });
     this.sidePanel = main.createDiv({ cls: "mm-side-panel" });
-    this.sidePanel.style.width = SIDE_PANEL_W + "px";
+    this.sidePanel.setCssStyles({ width: SIDE_PANEL_W + "px" });
     if (this.isMobile) {
-      this.sidePanel.style.display = "none";
+      this.sidePanel.setCssStyles({ display: "none" });
       this.sidePanel.addClass("is-hidden");
     }
     this.updateToolbarState();
@@ -3448,7 +3456,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   }
   toggleSidePanel() {
     const willShow = this.sidePanel.style.display === "none";
-    this.sidePanel.style.display = willShow ? "" : "none";
+    this.sidePanel.setCssStyles({ display: willShow ? "" : "none" });
     this.sidePanel.classList.toggle("is-hidden", !willShow);
     if (this.isMobile) {
       if (willShow) {
@@ -3456,9 +3464,9 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
           this.mobileOverlay = this.canvas.createDiv({ cls: "mm-mobile-overlay" });
           this.mobileOverlay.addEventListener("click", () => this.toggleSidePanel());
         }
-        this.mobileOverlay.style.display = "";
+        this.mobileOverlay.setCssStyles({ display: "" });
       } else if (this.mobileOverlay) {
-        this.mobileOverlay.style.display = "none";
+        this.mobileOverlay.setCssStyles({ display: "none" });
       }
     }
     requestAnimationFrame(() => this.fitView());
@@ -3504,7 +3512,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   // ---------- 加载 / 序列化 ----------
   async loadMap() {
     var _a, _b, _c, _d, _e;
-    this.overlay.innerHTML = "";
+    this.overlay.empty();
     if (!this.file) {
       this.renderEmpty();
       return;
@@ -3557,7 +3565,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   }
   renderEmpty() {
     while (this.g.firstChild) this.g.removeChild(this.g.firstChild);
-    this.overlay.innerHTML = "";
+    this.overlay.empty();
     const t = svgEl("text", {
       x: "20",
       y: "40",
@@ -3947,7 +3955,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   // ---------- 渲染 ----------
   render() {
     while (this.g.firstChild) this.g.removeChild(this.g.firstChild);
-    this.overlay.innerHTML = "";
+    this.overlay.empty();
     this.nodeEls.clear();
     if (!this.root) return;
     for (const [id, pos] of this.positions) {
@@ -3962,7 +3970,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
           d: edgePath(pos, cp, this.nodeWidth(node), this.nodeWidth(k), this.nh, this.currentLayout),
           class: "mm-edge"
         });
-        if (color) path.style.stroke = color;
+        if (color) path.setCssStyles({ stroke: color });
         this.g.appendChild(path);
       });
     }
@@ -4020,13 +4028,13 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     });
     const div = document.createElement("div");
     div.className = "mm-node" + (isRoot ? " is-root" : "") + (isSelected ? " is-selected" : "") + (isCollapsed ? " is-collapsed" : "");
-    div.style.width = this.nodeWidth(node) + "px";
-    div.style.height = this.nodeBoxHeight(node) + "px";
-    div.style.fontSize = this.fontSizeOf(this.depthOf(node)) + "px";
+    div.setCssStyles({ width: this.nodeWidth(node) + "px" });
+    div.setCssStyles({ height: this.nodeBoxHeight(node) + "px" });
+    div.setCssStyles({ fontSize: this.fontSizeOf(this.depthOf(node)) + "px" });
     if (col) {
-      div.style.background = col.fill;
-      div.style.color = col.text;
-      div.style.borderColor = col.fill;
+      div.setCssStyles({ background: col.fill });
+      div.setCssStyles({ color: col.text });
+      div.setCssStyles({ borderColor: col.fill });
     }
     if (stickers.length > 0) {
       const stRow = document.createElement("div");
@@ -4117,7 +4125,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     }
     const apply = (newW) => {
       newW = Math.max(MIN_NODE_W, Math.min(MAX_NODE_W, Math.round(newW)));
-      div.style.width = newW + "px";
+      div.setCssStyles({ width: newW + "px" });
       if (fo) {
         fo.setAttribute("width", String(newW));
         if (parent) {
@@ -4184,7 +4192,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const up = (ev) => {
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
-      document.body.style.userSelect = "";
+      document.body.setCssStyles({ userSelect: "" });
       const d = self2.nodeEls.get(id);
       if (d) d.classList.remove("is-dragging");
       if (!dragging) return;
@@ -4196,7 +4204,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       self2.refreshHeader();
       self2.maybeAutoSave();
     };
-    document.body.style.userSelect = "none";
+    document.body.setCssStyles({ userSelect: "none" });
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
   }
@@ -4369,12 +4377,12 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     input.value = (_a = node.title) != null ? _a : "";
     const editDepth = this.depthOf(node);
     const editBoxH = this.boxHeightOf(editDepth);
-    input.style.left = this.tx + (pos.x - this.nodeWidth(node) / 2) * this.scale + "px";
-    input.style.top = this.ty + (pos.y - editBoxH / 2) * this.scale + "px";
-    input.style.width = this.nodeWidth(node) * this.scale + "px";
-    input.style.height = editBoxH * this.scale + "px";
-    input.style.fontSize = this.fontSizeOf(editDepth) * this.scale + "px";
-    input.style.pointerEvents = "auto";
+    input.setCssStyles({ left: this.tx + (pos.x - this.nodeWidth(node) / 2) * this.scale + "px" });
+    input.setCssStyles({ top: this.ty + (pos.y - editBoxH / 2) * this.scale + "px" });
+    input.setCssStyles({ width: this.nodeWidth(node) * this.scale + "px" });
+    input.setCssStyles({ height: editBoxH * this.scale + "px" });
+    input.setCssStyles({ fontSize: this.fontSizeOf(editDepth) * this.scale + "px" });
+    input.setCssStyles({ pointerEvents: "auto" });
     this.overlay.appendChild(input);
     input.focus({ preventScroll: true });
     input.select();
@@ -4436,11 +4444,11 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       ".mm-edit-input"
     );
     if (input) {
-      input.style.left = this.tx + (pos.x - this.nodeWidth(node) / 2) * editScale + "px";
-      input.style.top = this.ty + (pos.y - this.nh / 2) * editScale + "px";
-      input.style.width = this.nodeWidth(node) * editScale + "px";
-      input.style.height = nh + "px";
-      input.style.fontSize = 14 * editScale + "px";
+      input.setCssStyles({ left: this.tx + (pos.x - this.nodeWidth(node) / 2) * editScale + "px" });
+      input.setCssStyles({ top: this.ty + (pos.y - this.nh / 2) * editScale + "px" });
+      input.setCssStyles({ width: this.nodeWidth(node) * editScale + "px" });
+      input.setCssStyles({ height: nh + "px" });
+      input.setCssStyles({ fontSize: 14 * editScale + "px" });
     }
   }
   // 让 .mm-view 容器收缩到「键盘上方」的可见高度：
@@ -4454,12 +4462,12 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const availH = vv ? Math.min(vv.height, window.innerHeight) : window.innerHeight;
     const keyboardShown = window.innerHeight - availH > 32;
     if (!keyboardShown) {
-      if (this.contentEl.style.height) this.contentEl.style.height = "";
+      if (this.contentEl.style.height) this.contentEl.setCssStyles({ height: "" });
     } else {
       const rawTop = this.contentEl.getBoundingClientRect().top;
       const top = Math.max(0, rawTop);
       const visibleH = Math.max(160, availH - top);
-      this.contentEl.style.height = visibleH + "px";
+      this.contentEl.setCssStyles({ height: visibleH + "px" });
     }
     requestAnimationFrame(() => {
       if (this.editingId) this.centerNodeForEdit(this.editingId);
@@ -4491,7 +4499,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       window.clearTimeout(this.editRefocusTimer);
       this.editRefocusTimer = void 0;
     }
-    this.contentEl.style.height = "";
+    this.contentEl.setCssStyles({ height: "" });
   }
   // ---------- 平移 / 缩放 ----------
   // 命中判定：target 是根节点 div 自身或它的子元素
@@ -4773,7 +4781,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
         const swatches = section3.createDiv({ cls: "mm-swatches" });
         for (const c of NODE_PALETTE) {
           const sw = swatches.createDiv({ cls: "mm-swatch" });
-          sw.style.background = c;
+          sw.setCssStyles({ background: c });
           sw.addEventListener("click", () => this.setNodeColor(c));
         }
         const pickerRow = section3.createDiv({ cls: "mm-picker-row" });
@@ -5236,11 +5244,13 @@ var MindMapSettingTab = class extends import_obsidian2.PluginSettingTab {
       });
     });
     containerEl.createDiv({ cls: "setting-item-description" }, (div) => {
-      div.innerHTML = `
-        <p style="margin-top:12px;color:var(--text-muted);font-size:13px;">
-        \u5F53\u524D\u95F4\u9694\uFF1A<strong>${this.plugin.settings.autoSaveInterval} \u79D2</strong><br>
-        \u5FEB\u6377\u952E\uFF1ACtrl+S \u624B\u52A8\u4FDD\u5B58 \xB7 Tab \u6DFB\u52A0\u5B50\u4E3B\u9898 \xB7 Enter \u6DFB\u52A0\u540C\u7EA7 \xB7 Delete \u5220\u9664\u8282\u70B9
-        </p>`;
+      const p = div.createEl("p");
+      p.setCssStyles({ marginTop: "12px", color: "var(--text-muted)", fontSize: "13px" });
+      p.append("\u5F53\u524D\u95F4\u9694\uFF1A");
+      const strong = p.createEl("strong");
+      strong.textContent = `${this.plugin.settings.autoSaveInterval} \u79D2`;
+      p.appendChild(document.createElement("br"));
+      p.append("\u5FEB\u6377\u952E\uFF1ACtrl+S \u624B\u52A8\u4FDD\u5B58 \xB7 Tab \u6DFB\u52A0\u5B50\u4E3B\u9898 \xB7 Enter \u6DFB\u52A0\u540C\u7EA7 \xB7 Delete \u5220\u9664\u8282\u70B9");
     });
   }
 };
@@ -5267,11 +5277,11 @@ var FileNameModal = class extends import_obsidian2.Modal {
       cls: "setting-item-description",
       text: "\u5C06\u521B\u5EFA .xmind \u6587\u4EF6\uFF0C\u53EF\u5728 Obsidian \u4E2D\u53CC\u51FB\u6253\u5F00\u7F16\u8F91\u3002"
     });
-    hint.style.margin = "8px 0";
+    hint.setCssStyles({ margin: "8px 0" });
     const row = contentEl.createDiv({ cls: "modal-button-row" });
     const ok = row.createEl("button", { text: "\u521B\u5EFA", cls: "mod-cta" });
     const cancel = row.createEl("button", { text: "\u53D6\u6D88" });
-    ok.style.marginRight = "8px";
+    ok.setCssStyles({ marginRight: "8px" });
     const submit = () => {
       const v = input.value.trim();
       this.close();

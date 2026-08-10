@@ -222,19 +222,19 @@ export function hasMarker(topic: unknown, id: string): boolean {
 export function renderMarkerIcon(def: MarkerDef, size = 14): HTMLElement {
   const wrap = document.createElement("span");
   wrap.className = "mm-marker-icon";
-  wrap.style.width = size + "px";
-  wrap.style.height = size + "px";
+  wrap.setCssStyles({ width: size + "px" })
+  wrap.setCssStyles({ height: size + "px" })
   wrap.title = def.label;
 
   if (def.symbol) {
     wrap.textContent = def.symbol;
-    wrap.style.color = def.color;
-    wrap.style.fontSize = Math.round(size * 0.85) + "px";
-    wrap.style.lineHeight = "1";
-    wrap.style.display = "inline-flex";
-    wrap.style.alignItems = "center";
-    wrap.style.justifyContent = "center";
-    wrap.style.fontWeight = "600";
+    wrap.setCssStyles({ color: def.color })
+    wrap.setCssStyles({ fontSize: Math.round(size * 0.85) + "px" })
+    wrap.setCssStyles({ lineHeight: "1" })
+    wrap.setCssStyles({ display: "inline-flex" })
+    wrap.setCssStyles({ alignItems: "center" })
+    wrap.setCssStyles({ justifyContent: "center" })
+    wrap.setCssStyles({ fontWeight: "600" })
   } else if (def.svgPath) {
     const NS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(NS, "svg");
@@ -247,14 +247,14 @@ export function renderMarkerIcon(def: MarkerDef, size = 14): HTMLElement {
     svg.appendChild(path);
     wrap.appendChild(svg);
   } else if (def.shape === "triangle") {
-    wrap.style.background = def.color;
-    wrap.style.clipPath = "polygon(50% 0, 100% 100%, 0 100%)";
+    wrap.setCssStyles({ background: def.color })
+    wrap.setCssStyles({ clipPath: "polygon(50% 0, 100% 100%, 0 100%)" })
   } else if (def.shape === "square") {
-    wrap.style.background = def.color;
-    wrap.style.borderRadius = "2px";
+    wrap.setCssStyles({ background: def.color })
+    wrap.setCssStyles({ borderRadius: "2px" })
   } else if (def.shape === "diamond") {
-    wrap.style.background = def.color;
-    wrap.style.transform = "rotate(45deg)";
+    wrap.setCssStyles({ background: def.color })
+    wrap.setCssStyles({ transform: "rotate(45deg)" })
   } else {
     // 默认：实心圆；如果是 task 进度，画进度环
     const NS = "http://www.w3.org/2000/svg";
