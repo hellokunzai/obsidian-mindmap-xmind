@@ -1259,7 +1259,9 @@ export class MindMapView extends FileView {
           d: edgePath(pos, cp, this.nodeWidth(node), this.nodeWidth(k), this.nh, this.currentLayout),
           class: "mm-edge",
         });
-        if (color) path.setAttribute("stroke", color);
+        // 用内联 style 覆盖 styles.css 里的 .mm-edge{stroke:...}：SVG presentation attribute
+        // 的优先级低于 CSS 规则，只有内联样式能稳定盖住（影响：彩虹分支、_color 节点配色）
+        if (color) path.style.stroke = color;
         this.g.appendChild(path);
       });
     }
@@ -1274,14 +1276,25 @@ export class MindMapView extends FileView {
 
   private edgeColor(parent: XTopic, childIndex: number): string {
     if (
-      this.canvasStyle.rainbow &&
-      this.root &&
-      parent === this.root &&
-      this.currentLayout !== "orgChart"
+      !this.canvasStyle.rainbow ||
+      !this.root ||
+      this.currentLayout === "orgChart"
     ) {
-      return RAINBOW_COLORS[childIndex % RAINBOW_COLORS.length];
+      return "";
     }
-    return "";
+    // 沿 parent 向上走到 root，记录「作为 root 子节点时的 index」，
+    // 用它从 RAINBOW_COLORS 取色，让二级/三级分支也继承一级分支的彩虹色。
+    let cur: XTopic = parent;
+    let idx = childIndex;
+    while (cur !== this.root) {
+      const realParent = findParent(this.root, cur.id!);
+      if (!realParent) return "";
+      const siblings = attachedChildren(realParent);
+      idx = siblings.indexOf(cur);
+      if (idx < 0) return "";
+      cur = realParent;
+    }
+    return RAINBOW_COLORS[idx % RAINBOW_COLORS.length];
   }
 
   // 向上查找最近的祖先 _color（含自身）

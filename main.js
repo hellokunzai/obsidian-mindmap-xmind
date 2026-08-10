@@ -3938,7 +3938,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
           d: edgePath(pos, cp, this.nodeWidth(node), this.nodeWidth(k), this.nh, this.currentLayout),
           class: "mm-edge"
         });
-        if (color) path.setAttribute("stroke", color);
+        if (color) path.style.stroke = color;
         this.g.appendChild(path);
       });
     }
@@ -3948,10 +3948,20 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     this.updateMinimap();
   }
   edgeColor(parent, childIndex) {
-    if (this.canvasStyle.rainbow && this.root && parent === this.root && this.currentLayout !== "orgChart") {
-      return RAINBOW_COLORS[childIndex % RAINBOW_COLORS.length];
+    if (!this.canvasStyle.rainbow || !this.root || this.currentLayout === "orgChart") {
+      return "";
     }
-    return "";
+    let cur = parent;
+    let idx = childIndex;
+    while (cur !== this.root) {
+      const realParent = findParent(this.root, cur.id);
+      if (!realParent) return "";
+      const siblings = attachedChildren(realParent);
+      idx = siblings.indexOf(cur);
+      if (idx < 0) return "";
+      cur = realParent;
+    }
+    return RAINBOW_COLORS[idx % RAINBOW_COLORS.length];
   }
   // 向上查找最近的祖先 _color（含自身）
   resolveColor(node) {
