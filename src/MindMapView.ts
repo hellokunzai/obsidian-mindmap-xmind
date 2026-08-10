@@ -228,17 +228,13 @@ interface Pos {
   side: number; // 连线类型：1=右曲线 -1=左曲线 0=下折(orgChart) 2=下折(竖) 3=对角(鱼骨) 4=水平折(逻辑)
 }
 
-// 用局部别名引用 document，避免特定字面量触发社区市场自动检查；
-// 此处创建的是游离元素（稍后手动 appendChild），故不依赖 Obsidian 的 createEl（后者会立即挂载）。
+// 使用 Obsidian 全局 helper 创建游离元素，满足社区市场 prefer-create-el 检查。
 function newEl<K extends keyof HTMLElementTagNameMap>(tag: K): HTMLElementTagNameMap[K] {
-  const d = document;
-  return d.createElement(tag);
+  return createEl(tag);
 }
 
 function svgEl(tag: string, attrs: Record<string, string> = {}): SVGElement {
-  const d = document;
-  const el = d.createElementNS("http://www.w3.org/2000/svg", tag);
-  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  const el = createSvg(tag as keyof SVGElementTagNameMap, { attr: attrs });
   return el;
 }
 

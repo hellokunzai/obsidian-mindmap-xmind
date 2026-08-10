@@ -2920,13 +2920,10 @@ var STICKER_GROUPS = [
   }
 ];
 function newEl(tag) {
-  const d = document;
-  return d.createElement(tag);
+  return createEl(tag);
 }
 function svgEl(tag, attrs = {}) {
-  const d = document;
-  const el = d.createElementNS("http://www.w3.org/2000/svg", tag);
-  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  const el = createSvg(tag, { attr: attrs });
   return el;
 }
 function lerp(a, b, t) {
@@ -5186,7 +5183,7 @@ var MindMapSettingTab = class extends import_obsidian2.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian2.Setting(containerEl).setName("Mindmap Xmind \u601D\u7EF4\u5BFC\u56FE\u8BBE\u7F6E").setHeading();
+    new import_obsidian2.Setting(containerEl).setName("\u5E38\u89C4").setHeading();
     new import_obsidian2.Setting(containerEl).setName("\u81EA\u52A8\u4FDD\u5B58").setDesc("\u7F16\u8F91\u601D\u7EF4\u5BFC\u56FE\u65F6\u81EA\u52A8\u4FDD\u5B58\u66F4\u6539\uFF0C\u65E0\u9700\u624B\u52A8\u70B9\u51FB\u4FDD\u5B58\u6309\u94AE").addToggle((toggle) => {
       toggle.setValue(this.plugin.settings.autoSave).onChange(async (value) => {
         this.plugin.settings.autoSave = value;

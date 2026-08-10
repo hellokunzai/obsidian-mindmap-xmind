@@ -60,7 +60,7 @@ class MindMapSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl)
-      .setName("Mindmap Xmind 思维导图设置")
+      .setName("常规")
       .setHeading();
 
     new Setting(containerEl)
