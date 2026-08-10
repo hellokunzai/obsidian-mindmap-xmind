@@ -1,9 +1,9 @@
 {
   "id": "mindmap-xmind",
   "name": "Mindmap Xmind",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "minAppVersion": "1.4.0",
-  "description": "查看与交互编辑 XMind 思维导图（.xmind 格式）。",
+  "description": "View and interactively edit XMind mind maps (.xmind format).",
   "author": "WorkBuddy",
   "isDesktopOnly": false
 }

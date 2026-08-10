@@ -1,10 +1,19 @@
 # Mindmap Xmind
 
+A plugin to **view and interactively edit XMind mind maps** (`.xmind` format) inside Obsidian.
+
+- Plugin ID: `mindmap-xmind`
+- Version: `1.0.2`
+- Minimum Obsidian version: `1.4.0`
+- Supports desktop and mobile (not desktop-only)
+
+---
+
 在 Obsidian 中**查看与交互编辑 XMind 思维导图**（`.xmind` 格式）的插件。
 
 - 插件 ID：`mindmap-xmind`
-- 版本：`1.0.0`
-- 最低 Obsidian 版本：`0.15.0`
+- 版本：`1.0.2`
+- 最低 Obsidian 版本：`1.4.0`
 - 支持桌面端、移动端（非桌面独占）
 
 ---
