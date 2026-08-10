@@ -3559,12 +3559,55 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     h -= this.vgap;
     return h;
   }
-  // 节点的实际宽度：优先用用户拖拽设定的 _width，否则回退到布局默认值 nw
+  // 节点在树中距离根的深度（根=0）。找不到时返回 0，避免无限递归。
+  depthOf(n) {
+    if (!this.root || n.id === this.root.id) return 0;
+    let found = -1;
+    const walk = (t, depth) => {
+      if (t.id === n.id) {
+        found = depth;
+        return true;
+      }
+      for (const k of attachedChildren(t)) {
+        if (walk(k, depth + 1)) return true;
+      }
+      return false;
+    };
+    walk(this.root, 0);
+    return found < 0 ? 0 : found;
+  }
+  // 随层级深度缩放的盒子宽度：根最宽，每深一级 ×0.78，下限 60。
+  boxWidthOf(depth) {
+    const base = this.canvasStyle.compact ? 150 : 170;
+    const decay = 0.78;
+    const minW = MIN_NODE_W;
+    return Math.max(minW, Math.round(base * Math.pow(decay, depth)));
+  }
+  // 随层级深度缩放的盒子高度：根最高，每深一级 ×0.84，下限 24。
+  // 注意：仅用于绘制单个盒子；布局基线仍用 this.nh，避免改动子树垂直排布。
+  boxHeightOf(depth) {
+    const base = this.canvasStyle.compact ? NODE_H_COMPACT : NODE_H;
+    const decay = 0.84;
+    const minH = 24;
+    return Math.max(minH, Math.round(base * Math.pow(decay, depth)));
+  }
+  // 字号随深度递减；越小越细，避免深节点被裁。
+  fontSizeOf(depth) {
+    if (depth <= 0) return this.canvasStyle.compact ? 16 : 18;
+    if (depth === 1) return this.canvasStyle.compact ? 12 : 14;
+    if (depth === 2) return this.canvasStyle.compact ? 11 : 12;
+    return this.canvasStyle.compact ? 10 : 11;
+  }
+  // 节点的实际宽度：优先用用户拖拽设定的 _width，否则按深度回退到层级默认盒宽
   nodeWidth(n) {
     const w = n._width;
     const num = typeof w === "number" ? w : typeof w === "string" ? parseFloat(w) : NaN;
     if (isFinite(num) && num >= MIN_NODE_W) return num;
-    return this.nw;
+    return this.boxWidthOf(this.depthOf(n));
+  }
+  // 节点盒子（单格）渲染高度，按层级深度缩放
+  nodeBoxHeight(n) {
+    return this.boxHeightOf(this.depthOf(n));
   }
   place(node, x, top, side) {
     const h = this.nodeHeight(node);
@@ -3938,15 +3981,15 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const col = this.resolveColor(node);
     const fo = svgEl("foreignObject", {
       x: String(pos.x - this.nodeWidth(node) / 2),
-      y: String(pos.y - this.nh / 2),
+      y: String(pos.y - this.nodeBoxHeight(node) / 2),
       width: String(this.nodeWidth(node)),
-      height: String(this.nh)
+      height: String(this.nodeBoxHeight(node))
     });
     const div = document.createElement("div");
     div.className = "mm-node" + (isRoot ? " is-root" : "") + (isSelected ? " is-selected" : "") + (isCollapsed ? " is-collapsed" : "");
     div.style.width = this.nodeWidth(node) + "px";
-    div.style.height = this.nh + "px";
-    div.style.fontSize = (this.canvasStyle.compact ? 12 : 14) + "px";
+    div.style.height = this.nodeBoxHeight(node) + "px";
+    div.style.fontSize = this.fontSizeOf(this.depthOf(node)) + "px";
     if (col) {
       div.style.background = col.fill;
       div.style.color = col.text;
@@ -4280,11 +4323,13 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const input = document.createElement("input");
     input.className = "mm-edit-input";
     input.value = (_a = node.title) != null ? _a : "";
+    const editDepth = this.depthOf(node);
+    const editBoxH = this.boxHeightOf(editDepth);
     input.style.left = this.tx + (pos.x - this.nodeWidth(node) / 2) * this.scale + "px";
-    input.style.top = this.ty + (pos.y - this.nh / 2) * this.scale + "px";
+    input.style.top = this.ty + (pos.y - editBoxH / 2) * this.scale + "px";
     input.style.width = this.nodeWidth(node) * this.scale + "px";
-    input.style.height = this.nh * this.scale + "px";
-    input.style.fontSize = 14 * this.scale + "px";
+    input.style.height = editBoxH * this.scale + "px";
+    input.style.fontSize = this.fontSizeOf(editDepth) * this.scale + "px";
     input.style.pointerEvents = "auto";
     this.overlay.appendChild(input);
     input.focus({ preventScroll: true });
