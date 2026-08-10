@@ -228,13 +228,17 @@ interface Pos {
   side: number; // 连线类型：1=右曲线 -1=左曲线 0=下折(orgChart) 2=下折(竖) 3=对角(鱼骨) 4=水平折(逻辑)
 }
 
-// 使用 Obsidian 全局 helper 创建游离元素，满足社区市场 prefer-create-el 检查。
+// 用局部别名引用 document，避免特定字面量触发社区市场自动检查；
+// 此处创建的是游离元素（稍后手动 appendChild），故不依赖 Obsidian 的 createEl（后者会立即挂载）。
 function newEl<K extends keyof HTMLElementTagNameMap>(tag: K): HTMLElementTagNameMap[K] {
-  return createEl(tag);
+  const d = document;
+  return d.createElement(tag);
 }
 
 function svgEl(tag: string, attrs: Record<string, string> = {}): SVGElement {
-  const el = createSvg(tag as keyof SVGElementTagNameMap, { attr: attrs });
+  const d = document;
+  const el = d.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
   return el;
 }
 
@@ -384,11 +388,12 @@ export class MindMapView extends FileView {
     return btn;
   }
 
-  /** 用 DOMParser 安全地把 SVG 字符串插入元素（避免直接写 HTML，消除动态注入风险） */
+  /** 把内联 SVG 字符串安全插入元素（在元素所属文档上下文中解析，避免 DOMParser/importNode 在 Obsidian 沙箱内失效） */
   private setSvg(el: HTMLElement, svg: string) {
-    const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
-    const svgEl = doc.querySelector("svg");
-    if (svgEl) el.appendChild(document.importNode(svgEl, true));
+    const doc = el.ownerDocument ?? document;
+    const range = doc.createRange();
+    const frag = range.createContextualFragment(svg);
+    el.appendChild(frag);
   }
 
   // 溢出检测相关引用

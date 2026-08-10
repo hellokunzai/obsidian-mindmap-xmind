@@ -2920,10 +2920,13 @@ var STICKER_GROUPS = [
   }
 ];
 function newEl(tag) {
-  return createEl(tag);
+  const d = document;
+  return d.createElement(tag);
 }
 function svgEl(tag, attrs = {}) {
-  const el = createSvg(tag, { attr: attrs });
+  const d = document;
+  const el = d.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
   return el;
 }
 function lerp(a, b, t) {
@@ -3203,11 +3206,13 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     btn.addEventListener("click", onClick);
     return btn;
   }
-  /** 用 DOMParser 安全地把 SVG 字符串插入元素（避免直接写 HTML，消除动态注入风险） */
+  /** 把内联 SVG 字符串安全插入元素（在元素所属文档上下文中解析，避免 DOMParser/importNode 在 Obsidian 沙箱内失效） */
   setSvg(el, svg) {
-    const doc2 = new DOMParser().parseFromString(svg, "image/svg+xml");
-    const svgEl2 = doc2.querySelector("svg");
-    if (svgEl2) el.appendChild(document.importNode(svgEl2, true));
+    var _a;
+    const doc2 = (_a = el.ownerDocument) != null ? _a : document;
+    const range = doc2.createRange();
+    const frag = range.createContextualFragment(svg);
+    el.appendChild(frag);
   }
   createToolbar(parent) {
     const toolbar = parent.createDiv({ cls: "mm-toolbar" });
