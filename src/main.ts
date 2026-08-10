@@ -59,7 +59,9 @@ class MindMapSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl("h2", { text: "Mindmap Xmind 思维导图设置" });
+    new Setting(containerEl)
+      .setName("Mindmap Xmind 思维导图设置")
+      .setHeading();
 
     new Setting(containerEl)
       .setName("自动保存")
@@ -95,10 +97,9 @@ class MindMapSettingTab extends PluginSettingTab {
         })
       );
 
-    containerEl.createEl("h3", {
-      text: "外观与默认",
-      attr: { style: "margin-top:18px;" },
-    });
+    new Setting(containerEl)
+      .setName("外观与默认")
+      .setHeading();
 
     // 默认布局
     new Setting(containerEl)
@@ -176,7 +177,7 @@ class MindMapSettingTab extends PluginSettingTab {
       p.append("当前间隔：");
       const strong = p.createEl("strong");
       strong.textContent = `${this.plugin.settings.autoSaveInterval} 秒`;
-      p.appendChild(document.createElement("br"));
+      p.createEl("br");
       p.append("快捷键：Ctrl+S 手动保存 · Tab 添加子主题 · Enter 添加同级 · Delete 删除节点");
     });
   }
@@ -195,7 +196,9 @@ class FileNameModal extends Modal {
 
   onOpen() {
     const { contentEl } = this;
-    contentEl.createEl("h3", { text: "新建思维导图" });
+    new Setting(contentEl)
+      .setName("新建思维导图")
+      .setHeading();
     const input = contentEl.createEl("input", {
       type: "text",
       value: this.value,

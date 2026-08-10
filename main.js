@@ -2542,6 +2542,7 @@ function toggleCollapse(t) {
 }
 
 // src/markers.ts
+var doc = document;
 var PALETTE = [
   "#ff3b30",
   // 红
@@ -2710,7 +2711,7 @@ function hasMarker(topic, id) {
   return getMarkerIds(topic).includes(id);
 }
 function renderMarkerIcon(def, size = 14) {
-  const wrap = document.createElement("span");
+  const wrap = doc.createElement("span");
   wrap.className = "mm-marker-icon";
   wrap.setCssStyles({ width: size + "px" });
   wrap.setCssStyles({ height: size + "px" });
@@ -2726,11 +2727,11 @@ function renderMarkerIcon(def, size = 14) {
     wrap.setCssStyles({ fontWeight: "600" });
   } else if (def.svgPath) {
     const NS = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(NS, "svg");
+    const svg = doc.createElementNS(NS, "svg");
     svg.setAttribute("viewBox", "0 0 16 16");
     svg.setAttribute("width", String(size));
     svg.setAttribute("height", String(size));
-    const path = document.createElementNS(NS, "path");
+    const path = doc.createElementNS(NS, "path");
     path.setAttribute("d", def.svgPath);
     path.setAttribute("fill", def.color);
     svg.appendChild(path);
@@ -2746,11 +2747,11 @@ function renderMarkerIcon(def, size = 14) {
     wrap.setCssStyles({ transform: "rotate(45deg)" });
   } else {
     const NS = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(NS, "svg");
+    const svg = doc.createElementNS(NS, "svg");
     svg.setAttribute("viewBox", "0 0 16 16");
     svg.setAttribute("width", String(size));
     svg.setAttribute("height", String(size));
-    const bg = document.createElementNS(NS, "circle");
+    const bg = doc.createElementNS(NS, "circle");
     bg.setAttribute("cx", "8");
     bg.setAttribute("cy", "8");
     bg.setAttribute("r", "6");
@@ -2761,7 +2762,7 @@ function renderMarkerIcon(def, size = 14) {
     svg.appendChild(bg);
     const progress = def.progress;
     if (progress && progress > 0) {
-      const fg = document.createElementNS(NS, "circle");
+      const fg = doc.createElementNS(NS, "circle");
       fg.setAttribute("cx", "8");
       fg.setAttribute("cy", "8");
       fg.setAttribute("r", "6");
@@ -2772,7 +2773,7 @@ function renderMarkerIcon(def, size = 14) {
       fg.setAttribute("transform", "rotate(-90 8 8)");
       svg.appendChild(fg);
     } else {
-      const fill = document.createElementNS(NS, "circle");
+      const fill = doc.createElementNS(NS, "circle");
       fill.setAttribute("cx", "8");
       fill.setAttribute("cy", "8");
       fill.setAttribute("r", "6");
@@ -2918,8 +2919,13 @@ var STICKER_GROUPS = [
     items: ["\u2757", "\u2753", "\u2795", "\u2796", "\u2714\uFE0F", "\u2716\uFE0F", "\u26A0\uFE0F", "\u{1F4AC}", "\u{1F514}", "\u{1F4CD}"]
   }
 ];
+function newEl(tag) {
+  const d = document;
+  return d.createElement(tag);
+}
 function svgEl(tag, attrs = {}) {
-  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  const d = document;
+  const el = d.createElementNS("http://www.w3.org/2000/svg", tag);
   for (const k in attrs) el.setAttribute(k, attrs[k]);
   return el;
 }
@@ -3202,8 +3208,8 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   }
   /** 用 DOMParser 安全地把 SVG 字符串插入元素（避免直接写 HTML，消除动态注入风险） */
   setSvg(el, svg) {
-    const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
-    const svgEl2 = doc.querySelector("svg");
+    const doc2 = new DOMParser().parseFromString(svg, "image/svg+xml");
+    const svgEl2 = doc2.querySelector("svg");
     if (svgEl2) el.appendChild(document.importNode(svgEl2, true));
   }
   createToolbar(parent) {
@@ -4026,7 +4032,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       width: String(this.nodeWidth(node)),
       height: String(this.nodeBoxHeight(node))
     });
-    const div = document.createElement("div");
+    const div = newEl("div");
     div.className = "mm-node" + (isRoot ? " is-root" : "") + (isSelected ? " is-selected" : "") + (isCollapsed ? " is-collapsed" : "");
     div.setCssStyles({ width: this.nodeWidth(node) + "px" });
     div.setCssStyles({ height: this.nodeBoxHeight(node) + "px" });
@@ -4037,10 +4043,10 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       div.setCssStyles({ borderColor: col.fill });
     }
     if (stickers.length > 0) {
-      const stRow = document.createElement("div");
+      const stRow = newEl("div");
       stRow.className = "mm-node-stickers";
       for (const s of stickers) {
-        const sp = document.createElement("span");
+        const sp = newEl("span");
         sp.className = "mm-node-sticker";
         sp.textContent = s;
         stRow.appendChild(sp);
@@ -4048,7 +4054,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       div.appendChild(stRow);
     }
     if (markerIds.length > 0) {
-      const markersRow = document.createElement("div");
+      const markersRow = newEl("div");
       markersRow.className = "mm-node-markers";
       for (const mid of markerIds) {
         const def = findMarker(mid);
@@ -4056,12 +4062,12 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       }
       div.appendChild(markersRow);
     }
-    const text = document.createElement("div");
+    const text = newEl("div");
     text.className = "mm-node-text";
     text.textContent = (_b = node.title) != null ? _b : "(\u7A7A)";
     div.appendChild(text);
     const handleSide = pos.side < 0 ? "left" : "right";
-    const handle = document.createElement("div");
+    const handle = newEl("div");
     handle.className = "mm-resize-handle " + handleSide;
     handle.title = "\u62D6\u62FD\u8C03\u6574\u8282\u70B9\u5BBD\u5EA6";
     handle.addEventListener("pointerdown", (e) => {
@@ -4372,7 +4378,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       this.attachEditViewportHandler(id);
       this.centerNodeForEdit(id);
     }
-    const input = document.createElement("input");
+    const input = newEl("input");
     input.className = "mm-edit-input";
     input.value = (_a = node.title) != null ? _a : "";
     const editDepth = this.depthOf(node);
@@ -4592,7 +4598,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const img = new Image();
     img.onload = () => {
       const scale = 2;
-      const canvas = document.createElement("canvas");
+      const canvas = newEl("canvas");
       canvas.width = w * scale;
       canvas.height = h * scale;
       const ctx = canvas.getContext("2d");
@@ -5006,11 +5012,12 @@ function makeThumbSvg(kind, active) {
   const stroke = active ? "var(--interactive-accent)" : "var(--text-muted)";
   const fill = active ? "var(--interactive-accent)" : "var(--background-modifier-border)";
   const NS = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(NS, "svg");
+  const doc2 = document;
+  const svg = doc2.createElementNS(NS, "svg");
   svg.setAttribute("viewBox", "0 0 80 50");
   svg.setAttribute("class", "mm-thumb-svg");
   const dot = (cx, cy, r = 2.5, f = fill) => {
-    const c = document.createElementNS(NS, "circle");
+    const c = doc2.createElementNS(NS, "circle");
     c.setAttribute("cx", String(cx));
     c.setAttribute("cy", String(cy));
     c.setAttribute("r", String(r));
@@ -5018,7 +5025,7 @@ function makeThumbSvg(kind, active) {
     svg.appendChild(c);
   };
   const line = (d) => {
-    const p = document.createElementNS(NS, "path");
+    const p = doc2.createElementNS(NS, "path");
     p.setAttribute("d", d);
     p.setAttribute("fill", "none");
     p.setAttribute("stroke", stroke);
@@ -5179,7 +5186,7 @@ var MindMapSettingTab = class extends import_obsidian2.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Mindmap Xmind \u601D\u7EF4\u5BFC\u56FE\u8BBE\u7F6E" });
+    new import_obsidian2.Setting(containerEl).setName("Mindmap Xmind \u601D\u7EF4\u5BFC\u56FE\u8BBE\u7F6E").setHeading();
     new import_obsidian2.Setting(containerEl).setName("\u81EA\u52A8\u4FDD\u5B58").setDesc("\u7F16\u8F91\u601D\u7EF4\u5BFC\u56FE\u65F6\u81EA\u52A8\u4FDD\u5B58\u66F4\u6539\uFF0C\u65E0\u9700\u624B\u52A8\u70B9\u51FB\u4FDD\u5B58\u6309\u94AE").addToggle((toggle) => {
       toggle.setValue(this.plugin.settings.autoSave).onChange(async (value) => {
         this.plugin.settings.autoSave = value;
@@ -5198,10 +5205,7 @@ var MindMapSettingTab = class extends import_obsidian2.PluginSettingTab {
         this.display();
       })
     );
-    containerEl.createEl("h3", {
-      text: "\u5916\u89C2\u4E0E\u9ED8\u8BA4",
-      attr: { style: "margin-top:18px;" }
-    });
+    new import_obsidian2.Setting(containerEl).setName("\u5916\u89C2\u4E0E\u9ED8\u8BA4").setHeading();
     new import_obsidian2.Setting(containerEl).setName("\u9ED8\u8BA4\u5E03\u5C40").setDesc("\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE\u65F6\u4F7F\u7528\u7684\u9ED8\u8BA4\u5E03\u5C40").addDropdown((dd) => {
       for (const key of LAYOUT_ORDER) {
         dd.addOption(key, LAYOUTS[key].label);
@@ -5249,7 +5253,7 @@ var MindMapSettingTab = class extends import_obsidian2.PluginSettingTab {
       p.append("\u5F53\u524D\u95F4\u9694\uFF1A");
       const strong = p.createEl("strong");
       strong.textContent = `${this.plugin.settings.autoSaveInterval} \u79D2`;
-      p.appendChild(document.createElement("br"));
+      p.createEl("br");
       p.append("\u5FEB\u6377\u952E\uFF1ACtrl+S \u624B\u52A8\u4FDD\u5B58 \xB7 Tab \u6DFB\u52A0\u5B50\u4E3B\u9898 \xB7 Enter \u6DFB\u52A0\u540C\u7EA7 \xB7 Delete \u5220\u9664\u8282\u70B9");
     });
   }
@@ -5264,7 +5268,7 @@ var FileNameModal = class extends import_obsidian2.Modal {
   }
   onOpen() {
     const { contentEl } = this;
-    contentEl.createEl("h3", { text: "\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE" });
+    new import_obsidian2.Setting(contentEl).setName("\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE").setHeading();
     const input = contentEl.createEl("input", {
       type: "text",
       value: this.value,

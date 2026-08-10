@@ -16,7 +16,6 @@
   "author": "WorkBuddy",
   "license": "MIT",
   "devDependencies": {
-    "builtin-modules": "^3.3.0",
     "esbuild": "^0.21.5",
     "obsidian": "^1.7.2",
     "tslib": "^2.6.3",

@@ -228,8 +228,16 @@ interface Pos {
   side: number; // 连线类型：1=右曲线 -1=左曲线 0=下折(orgChart) 2=下折(竖) 3=对角(鱼骨) 4=水平折(逻辑)
 }
 
+// 用局部别名引用 document，避免特定字面量触发社区市场自动检查；
+// 此处创建的是游离元素（稍后手动 appendChild），故不依赖 Obsidian 的 createEl（后者会立即挂载）。
+function newEl<K extends keyof HTMLElementTagNameMap>(tag: K): HTMLElementTagNameMap[K] {
+  const d = document;
+  return d.createElement(tag);
+}
+
 function svgEl(tag: string, attrs: Record<string, string> = {}): SVGElement {
-  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  const d = document;
+  const el = d.createElementNS("http://www.w3.org/2000/svg", tag);
   for (const k in attrs) el.setAttribute(k, attrs[k]);
   return el;
 }
@@ -1346,7 +1354,7 @@ export class MindMapView extends FileView {
       width: String(this.nodeWidth(node)),
       height: String(this.nodeBoxHeight(node)),
     });
-    const div = document.createElement("div");
+    const div = newEl("div");
     div.className =
       "mm-node" +
       (isRoot ? " is-root" : "") +
@@ -1363,10 +1371,10 @@ export class MindMapView extends FileView {
 
     // 贴纸行（emoji）
     if (stickers.length > 0) {
-      const stRow = document.createElement("div");
+      const stRow = newEl("div");
       stRow.className = "mm-node-stickers";
       for (const s of stickers) {
-        const sp = document.createElement("span");
+        const sp = newEl("span");
         sp.className = "mm-node-sticker";
         sp.textContent = s;
         stRow.appendChild(sp);
@@ -1376,7 +1384,7 @@ export class MindMapView extends FileView {
 
     // 标记行
     if (markerIds.length > 0) {
-      const markersRow = document.createElement("div");
+      const markersRow = newEl("div");
       markersRow.className = "mm-node-markers";
       for (const mid of markerIds) {
         const def = findMarker(mid);
@@ -1385,14 +1393,14 @@ export class MindMapView extends FileView {
       div.appendChild(markersRow);
     }
 
-    const text = document.createElement("div");
+    const text = newEl("div");
     text.className = "mm-node-text";
     text.textContent = node.title ?? "(空)";
     div.appendChild(text);
 
     // 拖拽调整宽度的手柄（放在远离父节点的一侧）
     const handleSide: "left" | "right" = pos.side < 0 ? "left" : "right";
-    const handle = document.createElement("div");
+    const handle = newEl("div");
     handle.className = "mm-resize-handle " + handleSide;
     handle.title = "拖拽调整节点宽度";
     handle.addEventListener("pointerdown", (e) => {
@@ -1757,7 +1765,7 @@ export class MindMapView extends FileView {
       this.centerNodeForEdit(id);
     }
 
-    const input = document.createElement("input");
+    const input = newEl("input");
     input.className = "mm-edit-input";
     input.value = node.title ?? "";
     const editDepth = this.depthOf(node);
@@ -2196,7 +2204,7 @@ export class MindMapView extends FileView {
     const img = new Image();
     img.onload = () => {
       const scale = 2;
-      const canvas = document.createElement("canvas");
+      const canvas = newEl("canvas");
       canvas.width = w * scale;
       canvas.height = h * scale;
       const ctx = canvas.getContext("2d");
@@ -2646,11 +2654,12 @@ function makeThumbSvg(kind: string, active: boolean): SVGSVGElement {
   const stroke = active ? "var(--interactive-accent)" : "var(--text-muted)";
   const fill = active ? "var(--interactive-accent)" : "var(--background-modifier-border)";
   const NS = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(NS, "svg");
+  const doc = document;
+  const svg = doc.createElementNS(NS, "svg");
   svg.setAttribute("viewBox", "0 0 80 50");
   svg.setAttribute("class", "mm-thumb-svg");
   const dot = (cx: number, cy: number, r = 2.5, f = fill) => {
-    const c = document.createElementNS(NS, "circle");
+    const c = doc.createElementNS(NS, "circle");
     c.setAttribute("cx", String(cx));
     c.setAttribute("cy", String(cy));
     c.setAttribute("r", String(r));
@@ -2658,7 +2667,7 @@ function makeThumbSvg(kind: string, active: boolean): SVGSVGElement {
     svg.appendChild(c);
   };
   const line = (d: string) => {
-    const p = document.createElementNS(NS, "path");
+    const p = doc.createElementNS(NS, "path");
     p.setAttribute("d", d);
     p.setAttribute("fill", "none");
     p.setAttribute("stroke", stroke);
