@@ -2453,7 +2453,7 @@ async function serializeXMind(sheets) {
     "metadata.json",
     JSON.stringify(
       {
-        creator: { name: "WorkBuddy Obsidian MindMap" },
+        creator: { name: "hellokunzai" },
         dataStructureVersion: "2"
       },
       null,
