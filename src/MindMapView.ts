@@ -62,7 +62,7 @@ export function applyDefaultThemeToRoot(
   theme: ThemeKey,
   compact: boolean
 ) {
-  const style: CanvasStyle = { ...DEFAULT_STYLE, compact };
+  const style: CanvasStyle = { ...DEFAULT_STYLE, compact, theme };
   if (theme === "rainbow") style.rainbow = true;
   (root as unknown as { _canvasStyle: CanvasStyle })._canvasStyle = style;
 
@@ -165,12 +165,14 @@ interface CanvasStyle {
   compact: boolean;
   uniformRootWidth: boolean;
   fullscreen: boolean;
+  theme: ThemeKey;
 }
 const DEFAULT_STYLE: CanvasStyle = {
   rainbow: false,
   compact: false,
   uniformRootWidth: true,
   fullscreen: false,
+  theme: "classic",
 };
 
 // 彩虹分支 7 色（与 XMind 风格接近）
@@ -251,7 +253,12 @@ function isDarkHex(hex: string): boolean {
 function readCanvasStyle(root: XTopic | null): CanvasStyle {
   const raw = (root as unknown as { _canvasStyle?: Partial<CanvasStyle> } | null)
     ?._canvasStyle;
-  return { ...DEFAULT_STYLE, ...(raw ?? {}) };
+  const merged = { ...DEFAULT_STYLE, ...(raw ?? {}) };
+  // 兼容旧文件：只有 rainbow 字段、没有 theme 字段时，按 rainbow 处理
+  if (merged.theme === "classic" && raw?.rainbow) {
+    merged.theme = "rainbow";
+  }
+  return merged;
 }
 function writeCanvasStyle(root: XTopic, style: CanvasStyle): void {
   (root as unknown as { _canvasStyle: CanvasStyle })._canvasStyle = style;
@@ -778,17 +785,19 @@ export class MindMapView extends FileView {
       if (!hasStoredCanvasStyle && pluginInstance) {
         const s = pluginInstance.settings;
         this.canvasStyle.compact = s.compactMode;
+        this.canvasStyle.theme = s.theme;
         if (s.theme === "rainbow") this.canvasStyle.rainbow = true;
-        // pastel 主题：仅当一级子节点没有 _color 时才上色
-        if (s.theme === "pastel" && this.root) {
-          const kids = attachedChildren(this.root);
-          kids.forEach((k, i) => {
-            if (!(k as { _color?: unknown })._color) {
-              (k as { _color: string })._color =
-                NODE_PALETTE[i % NODE_PALETTE.length];
-            }
-          });
-        }
+      }
+      // pastel 主题：给没有 _color 的一级子节点补色（支持新建后首次添加子节点、
+      // 以及旧文件迁移到 pastel 后的情况）
+      if (this.canvasStyle.theme === "pastel" && this.root) {
+        const kids = attachedChildren(this.root);
+        kids.forEach((k, i) => {
+          if (!(k as { _color?: unknown })._color) {
+            (k as { _color: string })._color =
+              NODE_PALETTE[i % NODE_PALETTE.length];
+          }
+        });
       }
       this.contentEl.toggleClass("mm-fullscreen", this.canvasStyle.fullscreen);
       // 加载新文件时清除旧的自动保存定时器，避免把上一文件的脏状态写回
@@ -1596,6 +1605,11 @@ export class MindMapView extends FileView {
     const parent = findTopic(this.root, id);
     if (!parent) return;
     const child = addChild(parent, "新主题");
+    if (parent === this.root && this.canvasStyle.theme === "pastel") {
+      const idx = attachedChildren(this.root).indexOf(child);
+      (child as { _color?: string })._color =
+        NODE_PALETTE[idx % NODE_PALETTE.length];
+    }
     if (parent.collapsed) toggleCollapse(parent);
     this.rebuildAndSelect(child.id!);
   }
@@ -1609,6 +1623,11 @@ export class MindMapView extends FileView {
     const parent = findParent(this.root, id);
     if (!parent) return;
     const child = addChild(parent, "新主题");
+    if (parent === this.root && this.canvasStyle.theme === "pastel") {
+      const idx = attachedChildren(this.root).indexOf(child);
+      (child as { _color?: string })._color =
+        NODE_PALETTE[idx % NODE_PALETTE.length];
+    }
     this.rebuildAndSelect(child.id!);
   }
 
@@ -1689,6 +1708,9 @@ export class MindMapView extends FileView {
     kids.forEach((k, i) => {
       (k as { _color?: string })._color = NODE_PALETTE[i % NODE_PALETTE.length];
     });
+    // 同步把主题设为 pastel，后续新增根子节点也会自动继承色板
+    this.canvasStyle.theme = "pastel";
+    writeCanvasStyle(this.root, this.canvasStyle);
     new Notice("已按分支自动染色（" + kids.length + " 个分支）");
     this.rebuild();
     this.renderSidePanel();
@@ -1701,6 +1723,9 @@ export class MindMapView extends FileView {
       for (const k of attachedChildren(t)) walk(k);
     };
     walk(this.root);
+    // 清除全部颜色后切回 classic，避免新增根子节点又被自动染色
+    this.canvasStyle.theme = "classic";
+    writeCanvasStyle(this.root, this.canvasStyle);
     this.rebuild();
     this.renderSidePanel();
   }

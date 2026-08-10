@@ -2773,7 +2773,7 @@ function setPluginInstance(plugin) {
 }
 var VIEW_TYPE_MINDMAP = "mindmap-view";
 function applyDefaultThemeToRoot(root, theme, compact) {
-  const style = { ...DEFAULT_STYLE, compact };
+  const style = { ...DEFAULT_STYLE, compact, theme };
   if (theme === "rainbow") style.rainbow = true;
   root._canvasStyle = style;
   if (theme === "pastel") {
@@ -2856,7 +2856,8 @@ var DEFAULT_STYLE = {
   rainbow: false,
   compact: false,
   uniformRootWidth: true,
-  fullscreen: false
+  fullscreen: false,
+  theme: "classic"
 };
 var RAINBOW_COLORS = [
   "#e74c3c",
@@ -2918,7 +2919,11 @@ function isDarkHex(hex) {
 }
 function readCanvasStyle(root) {
   const raw = root == null ? void 0 : root._canvasStyle;
-  return { ...DEFAULT_STYLE, ...raw != null ? raw : {} };
+  const merged = { ...DEFAULT_STYLE, ...raw != null ? raw : {} };
+  if (merged.theme === "classic" && (raw == null ? void 0 : raw.rainbow)) {
+    merged.theme = "rainbow";
+  }
+  return merged;
 }
 function writeCanvasStyle(root, style) {
   root._canvasStyle = style;
@@ -3506,15 +3511,16 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       if (!hasStoredCanvasStyle && pluginInstance) {
         const s = pluginInstance.settings;
         this.canvasStyle.compact = s.compactMode;
+        this.canvasStyle.theme = s.theme;
         if (s.theme === "rainbow") this.canvasStyle.rainbow = true;
-        if (s.theme === "pastel" && this.root) {
-          const kids = attachedChildren(this.root);
-          kids.forEach((k, i) => {
-            if (!k._color) {
-              k._color = NODE_PALETTE[i % NODE_PALETTE.length];
-            }
-          });
-        }
+      }
+      if (this.canvasStyle.theme === "pastel" && this.root) {
+        const kids = attachedChildren(this.root);
+        kids.forEach((k, i) => {
+          if (!k._color) {
+            k._color = NODE_PALETTE[i % NODE_PALETTE.length];
+          }
+        });
       }
       this.contentEl.toggleClass("mm-fullscreen", this.canvasStyle.fullscreen);
       if (this.autoSaveTimer !== void 0) {
@@ -4217,6 +4223,10 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const parent = findTopic(this.root, id);
     if (!parent) return;
     const child = addChild(parent, "\u65B0\u4E3B\u9898");
+    if (parent === this.root && this.canvasStyle.theme === "pastel") {
+      const idx = attachedChildren(this.root).indexOf(child);
+      child._color = NODE_PALETTE[idx % NODE_PALETTE.length];
+    }
     if (parent.collapsed) toggleCollapse(parent);
     this.rebuildAndSelect(child.id);
   }
@@ -4229,6 +4239,10 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const parent = findParent(this.root, id);
     if (!parent) return;
     const child = addChild(parent, "\u65B0\u4E3B\u9898");
+    if (parent === this.root && this.canvasStyle.theme === "pastel") {
+      const idx = attachedChildren(this.root).indexOf(child);
+      child._color = NODE_PALETTE[idx % NODE_PALETTE.length];
+    }
     this.rebuildAndSelect(child.id);
   }
   deleteNode(id) {
@@ -4298,6 +4312,8 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     kids.forEach((k, i) => {
       k._color = NODE_PALETTE[i % NODE_PALETTE.length];
     });
+    this.canvasStyle.theme = "pastel";
+    writeCanvasStyle(this.root, this.canvasStyle);
     new import_obsidian.Notice("\u5DF2\u6309\u5206\u652F\u81EA\u52A8\u67D3\u8272\uFF08" + kids.length + " \u4E2A\u5206\u652F\uFF09");
     this.rebuild();
     this.renderSidePanel();
@@ -4309,6 +4325,8 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       for (const k of attachedChildren(t)) walk(k);
     };
     walk(this.root);
+    this.canvasStyle.theme = "classic";
+    writeCanvasStyle(this.root, this.canvasStyle);
     this.rebuild();
     this.renderSidePanel();
   }
