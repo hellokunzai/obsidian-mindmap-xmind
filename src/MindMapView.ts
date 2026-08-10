@@ -1671,11 +1671,16 @@ export class MindMapView extends FileView {
 
     let done = false;
     const cleanup = () => {
-      // 还原编辑前的平移/缩放与容器高度，避免把用户视图卡在编辑态
-      this.tx = this.preEditTx;
-      this.ty = this.preEditTy;
-      this.scale = this.preEditScale;
-      this.applyTransform();
+      // 仅在移动端需要还原编辑前的平移/缩放与容器高度；
+      // 桌面端并没有进入过 isMobile 分支给 preEdit* 赋值（默认 0/0/1），
+      // 这里盲目重置会把刚 fitView 出来的视图打回 (0,0,1)，
+      // 表现就是「编辑完回车后整个思维导图跳到屏幕外」。
+      if (this.isMobile) {
+        this.tx = this.preEditTx;
+        this.ty = this.preEditTy;
+        this.scale = this.preEditScale;
+        this.applyTransform();
+      }
       this.detachEditViewportHandler();
     };
     const commit = () => {

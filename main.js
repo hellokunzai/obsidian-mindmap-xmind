@@ -4291,10 +4291,12 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     input.select();
     let done = false;
     const cleanup = () => {
-      this.tx = this.preEditTx;
-      this.ty = this.preEditTy;
-      this.scale = this.preEditScale;
-      this.applyTransform();
+      if (this.isMobile) {
+        this.tx = this.preEditTx;
+        this.ty = this.preEditTy;
+        this.scale = this.preEditScale;
+        this.applyTransform();
+      }
       this.detachEditViewportHandler();
     };
     const commit = () => {
