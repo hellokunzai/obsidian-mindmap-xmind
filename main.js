@@ -2976,6 +2976,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     __publicField(this, "preEditTx", 0);
     __publicField(this, "preEditTy", 0);
     __publicField(this, "preEditScale", 1);
+    __publicField(this, "autoSaveTimer");
     // 溢出检测相关引用
     __publicField(this, "overflowResizeObserver");
     __publicField(this, "toolbarPrimaryEl");
@@ -3355,9 +3356,6 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     this.contentEl.empty();
     this.contentEl.addClass("mm-view");
     this.contentEl.toggleClass("mm-fullscreen", this.canvasStyle.fullscreen);
-    if (pluginInstance) {
-      pluginInstance.registerActiveView(this);
-    }
     this.showMinimap = (_a = pluginInstance == null ? void 0 : pluginInstance.settings.showMinimap) != null ? _a : true;
     this.isMobile = import_obsidian.Platform.isMobile;
     this.contentEl.toggleClass("is-mobile", this.isMobile);
@@ -3455,14 +3453,18 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     await this.loadMap();
   }
   async onClose() {
-    if (pluginInstance) {
-      pluginInstance.unregisterActiveView(this);
-    }
     if (this.moreMenuCloseHandler) {
       document.removeEventListener("click", this.moreMenuCloseHandler);
       this.moreMenuCloseHandler = void 0;
     }
     this.stopOverflowObserver();
+    if (this.autoSaveTimer !== void 0) {
+      window.clearTimeout(this.autoSaveTimer);
+      this.autoSaveTimer = void 0;
+      if (this.dirty && (pluginInstance == null ? void 0 : pluginInstance.settings.autoSave)) {
+        await this.save();
+      }
+    }
     this.contentEl.removeClass("mm-view");
     this.contentEl.removeClass("mm-fullscreen");
     this.contentEl.removeClass("is-mobile");
@@ -3515,6 +3517,10 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
         }
       }
       this.contentEl.toggleClass("mm-fullscreen", this.canvasStyle.fullscreen);
+      if (this.autoSaveTimer !== void 0) {
+        window.clearTimeout(this.autoSaveTimer);
+        this.autoSaveTimer = void 0;
+      }
       this.dirty = false;
       this.computeLayout();
       this.applyDefaultView();
@@ -4102,7 +4108,6 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       const newW = apply(startW + delta);
       node._width = newW;
       self2.rebuild();
-      self2.maybeAutoSave();
     };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
@@ -4193,7 +4198,6 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       (i) => i.setTitle("\u91CD\u7F6E\u5BBD\u5EA6").onClick(() => {
         delete node._width;
         this.rebuild();
-        this.maybeAutoSave();
       })
     );
     menu.showAtMouseEvent(e);
@@ -4245,6 +4249,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     this.dirty = true;
     this.refreshHeader();
     this.fitView();
+    this.maybeAutoSave();
   }
   setLayout(key) {
     if (this.currentLayout === key || !this.root) return;
@@ -4347,6 +4352,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       this.render();
       this.dirty = true;
       this.refreshHeader();
+      this.maybeAutoSave();
     };
     input.addEventListener("blur", commit);
     input.addEventListener("keydown", (e) => {
@@ -4895,14 +4901,24 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   // ---------- 保存 ----------
   /**
    * 根据设置决定是否由编辑操作自动保存。
-   * - autoSave = true → 立即调用 save()（与定时器里的逻辑一致）
+   * - autoSave = true → 按 autoSaveInterval 做防抖保存：停止编辑 interval 秒后执行 save()
    * - autoSave = false → 什么都不做，仅保留 dirty 标记，等用户手动保存或 Ctrl+S
    * 工具栏「保存」按钮和 Ctrl+S 仍然直接调用 save()，代表用户主动行为，不走这里。
    */
   maybeAutoSave() {
-    if (pluginInstance == null ? void 0 : pluginInstance.settings.autoSave) {
-      this.save();
+    if (!(pluginInstance == null ? void 0 : pluginInstance.settings.autoSave)) return;
+    if (this.autoSaveTimer !== void 0) {
+      window.clearTimeout(this.autoSaveTimer);
     }
+    const intervalMs = pluginInstance.settings.autoSaveInterval * 1e3;
+    this.autoSaveTimer = window.setTimeout(() => {
+      this.autoSaveTimer = void 0;
+      if (this.dirty && (pluginInstance == null ? void 0 : pluginInstance.settings.autoSave)) {
+        this.save().catch((e) => {
+          console.error("[MindMap] \u81EA\u52A8\u4FDD\u5B58\u5931\u8D25:", e);
+        });
+      }
+    }, intervalMs);
   }
   async save() {
     if (!this.file || !this.root) return;
@@ -5114,21 +5130,18 @@ var MindMapSettingTab = class extends import_obsidian2.PluginSettingTab {
       toggle.setValue(this.plugin.settings.autoSave).onChange(async (value) => {
         this.plugin.settings.autoSave = value;
         await this.plugin.saveSettings();
-        this.plugin.applyAutoSave();
       });
     });
     new import_obsidian2.Setting(containerEl).setName("\u81EA\u52A8\u4FDD\u5B58\u95F4\u9694").setDesc("\u81EA\u52A8\u4FDD\u5B58\u7684\u65F6\u95F4\u95F4\u9694\uFF08\u79D2\uFF09").addSlider(
       (slider) => slider.setLimits(10, 300, 10).setValue(this.plugin.settings.autoSaveInterval).setDynamicTooltip().onChange(async (value) => {
         this.plugin.settings.autoSaveInterval = value;
         await this.plugin.saveSettings();
-        this.plugin.applyAutoSave();
       })
     ).addExtraButton(
       (btn) => btn.setIcon("reset").setTooltip("\u6062\u590D\u9ED8\u8BA4\u503C (30\u79D2)").onClick(async () => {
         this.plugin.settings.autoSaveInterval = DEFAULT_SETTINGS.autoSaveInterval;
         await this.plugin.saveSettings();
         this.display();
-        this.plugin.applyAutoSave();
       })
     );
     containerEl.createEl("h3", {
@@ -5239,9 +5252,6 @@ var MindMapPlugin = class extends import_obsidian2.Plugin {
   constructor() {
     super(...arguments);
     __publicField(this, "settings", DEFAULT_SETTINGS);
-    __publicField(this, "autoSaveHandle", null);
-    // 活跃的 MindMapView 引用（用于自动保存）
-    __publicField(this, "activeViews", /* @__PURE__ */ new Set());
   }
   async onload() {
     await this.loadSettings();
@@ -5261,7 +5271,6 @@ var MindMapPlugin = class extends import_obsidian2.Plugin {
     this.registerView(VIEW_TYPE_MINDMAP, (leaf) => new MindMapView(leaf));
     this.registerExtensions(["xmind"], VIEW_TYPE_MINDMAP);
     this.addSettingTab(new MindMapSettingTab(this.app, this));
-    this.applyAutoSave();
     this.addCommand({
       id: "new-mindmap",
       name: "\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE (.xmind)",
@@ -5348,49 +5357,7 @@ var MindMapPlugin = class extends import_obsidian2.Plugin {
   async saveSettings() {
     await this.saveData(this.settings);
   }
-  // ---------- 自动保存逻辑 ----------
-  /** 注册一个活跃的 MindMapView（由视图在 onOpen 时调用） */
-  registerActiveView(view) {
-    this.activeViews.add(view);
-  }
-  /** 注销一个 MindMapView（由视图在 onClose 时调用） */
-  unregisterActiveView(view) {
-    this.activeViews.delete(view);
-  }
-  /** 根据当前设置应用或取消自动保存定时器 */
-  applyAutoSave() {
-    if (this.autoSaveHandle !== null) {
-      window.clearInterval(this.autoSaveHandle);
-      this.autoSaveHandle = null;
-    }
-    if (!this.settings.autoSave) return;
-    const intervalMs = this.settings.autoSaveInterval * 1e3;
-    this.autoSaveHandle = window.setInterval(() => {
-      this.performAutoSave();
-    }, intervalMs);
-  }
-  /** 执行自动保存：遍历所有活跃视图，保存 dirty 的文件 */
-  performAutoSave() {
-    var _a;
-    let savedCount = 0;
-    for (const view of this.activeViews) {
-      if ((_a = view.isDirty) == null ? void 0 : _a.call(view)) {
-        view.save().catch((e) => {
-          console.error("[MindMap] \u81EA\u52A8\u4FDD\u5B58\u5931\u8D25:", e);
-        });
-        savedCount++;
-      }
-    }
-    if (savedCount > 0) {
-      console.log(`[MindMap] \u81EA\u52A8\u4FDD\u5B58\u4E86 ${savedCount} \u4E2A\u6587\u4EF6`);
-    }
-  }
   onunload() {
-    if (this.autoSaveHandle !== null) {
-      window.clearInterval(this.autoSaveHandle);
-      this.autoSaveHandle = null;
-    }
-    this.activeViews.clear();
   }
 };
 /*! Bundled license information:

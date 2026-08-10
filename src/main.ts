@@ -70,7 +70,6 @@ class MindMapSettingTab extends PluginSettingTab {
           .onChange(async (value: boolean) => {
             this.plugin.settings.autoSave = value;
             await this.plugin.saveSettings();
-            this.plugin.applyAutoSave();
           });
       });
 
@@ -84,7 +83,6 @@ class MindMapSettingTab extends PluginSettingTab {
         .onChange(async (value: number) => {
           this.plugin.settings.autoSaveInterval = value;
           await this.plugin.saveSettings();
-          this.plugin.applyAutoSave();
         })
       )
       .addExtraButton((btn: ExtraButtonComponent) => btn
@@ -94,7 +92,6 @@ class MindMapSettingTab extends PluginSettingTab {
           this.plugin.settings.autoSaveInterval = DEFAULT_SETTINGS.autoSaveInterval;
           await this.plugin.saveSettings();
           this.display();
-          this.plugin.applyAutoSave();
         })
       );
 
@@ -245,9 +242,6 @@ class FileNameModal extends Modal {
 
 export default class MindMapPlugin extends Plugin {
   settings: MindMapPluginSettings = DEFAULT_SETTINGS;
-  private autoSaveHandle: number | null = null;
-  // 活跃的 MindMapView 引用（用于自动保存）
-  private activeViews: Set<MindMapView> = new Set();
 
   async onload() {
     // 加载设置
@@ -276,9 +270,6 @@ export default class MindMapPlugin extends Plugin {
 
     // 注册设置面板（这是插件在 Obsidian 设置中正确显示的关键）
     this.addSettingTab(new MindMapSettingTab(this.app, this));
-
-    // 启用自动保存（如果设置中开启了）
-    this.applyAutoSave();
 
     // 新建思维导图（命令面板 / 快捷键）
     this.addCommand({
@@ -386,55 +377,7 @@ export default class MindMapPlugin extends Plugin {
     await this.saveData(this.settings);
   }
 
-  // ---------- 自动保存逻辑 ----------
-
-  /** 注册一个活跃的 MindMapView（由视图在 onOpen 时调用） */
-  registerActiveView(view: MindMapView) {
-    this.activeViews.add(view);
-  }
-
-  /** 注销一个 MindMapView（由视图在 onClose 时调用） */
-  unregisterActiveView(view: MindMapView) {
-    this.activeViews.delete(view);
-  }
-
-  /** 根据当前设置应用或取消自动保存定时器 */
-  applyAutoSave() {
-    // 清除旧的定时器
-    if (this.autoSaveHandle !== null) {
-      window.clearInterval(this.autoSaveHandle);
-      this.autoSaveHandle = null;
-    }
-
-    if (!this.settings.autoSave) return;
-
-    const intervalMs = this.settings.autoSaveInterval * 1000;
-    this.autoSaveHandle = window.setInterval(() => {
-      this.performAutoSave();
-    }, intervalMs) as unknown as number;
-  }
-
-  /** 执行自动保存：遍历所有活跃视图，保存 dirty 的文件 */
-  private performAutoSave() {
-    let savedCount = 0;
-    for (const view of this.activeViews) {
-      if ((view as { isDirty?: () => boolean }).isDirty?.()) {
-        view.save().catch((e) => {
-          console.error("[MindMap] 自动保存失败:", e);
-        });
-        savedCount++;
-      }
-    }
-    if (savedCount > 0) {
-      console.log(`[MindMap] 自动保存了 ${savedCount} 个文件`);
-    }
-  }
-
   override onunload() {
-    if (this.autoSaveHandle !== null) {
-      window.clearInterval(this.autoSaveHandle);
-      this.autoSaveHandle = null;
-    }
-    this.activeViews.clear();
+    // 插件卸载时无需额外清理，自动保存由视图自身管理
   }
 }

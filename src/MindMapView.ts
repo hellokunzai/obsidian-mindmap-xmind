@@ -39,8 +39,6 @@ export type ThemeKey = "classic" | "rainbow" | "pastel";
 // 前向声明插件类型（避免循环引用）
 interface IMindMapPlugin {
   settings: MindMapPluginSettings;
-  registerActiveView(view: MindMapView): void;
-  unregisterActiveView(view: MindMapView): void;
 }
 
 // 插件实例引用（由 MindMapPlugin 在 onload 时设置）
@@ -317,6 +315,7 @@ export class MindMapView extends FileView {
   private preEditTx = 0;
   private preEditTy = 0;
   private preEditScale = 1;
+  private autoSaveTimer?: number;
 
   // 当前布局的尺寸参数（按 compact 切换）
   private get nw() {
@@ -594,11 +593,6 @@ export class MindMapView extends FileView {
     this.contentEl.addClass("mm-view");
     this.contentEl.toggleClass("mm-fullscreen", this.canvasStyle.fullscreen);
 
-    // 向插件注册自身（用于自动保存）
-    if (pluginInstance) {
-      pluginInstance.registerActiveView(this);
-    }
-
     // 用插件设置初始化缩略图显隐（工具栏按钮会读取 this.showMinimap）
     this.showMinimap = pluginInstance?.settings.showMinimap ?? true;
 
@@ -718,15 +712,21 @@ export class MindMapView extends FileView {
   }
 
   async onClose() {
-    // 从插件注销自身
-    if (pluginInstance) {
-      pluginInstance.unregisterActiveView(this);
-    }
     if (this.moreMenuCloseHandler) {
       document.removeEventListener("click", this.moreMenuCloseHandler);
       this.moreMenuCloseHandler = undefined;
     }
     this.stopOverflowObserver();
+
+    // 关闭视图时若还有未触发的自动保存定时器，立即保存一次，避免数据丢失
+    if (this.autoSaveTimer !== undefined) {
+      window.clearTimeout(this.autoSaveTimer);
+      this.autoSaveTimer = undefined;
+      if (this.dirty && pluginInstance?.settings.autoSave) {
+        await this.save();
+      }
+    }
+
     this.contentEl.removeClass("mm-view");
     this.contentEl.removeClass("mm-fullscreen");
     this.contentEl.removeClass("is-mobile");
@@ -791,6 +791,11 @@ export class MindMapView extends FileView {
         }
       }
       this.contentEl.toggleClass("mm-fullscreen", this.canvasStyle.fullscreen);
+      // 加载新文件时清除旧的自动保存定时器，避免把上一文件的脏状态写回
+      if (this.autoSaveTimer !== undefined) {
+        window.clearTimeout(this.autoSaveTimer);
+        this.autoSaveTimer = undefined;
+      }
       this.dirty = false;
       this.computeLayout();
       this.applyDefaultView();
@@ -1466,7 +1471,6 @@ export class MindMapView extends FileView {
       const newW = apply(startW + delta);
       (node as { _width?: number })._width = newW;
       self.rebuild();
-      self.maybeAutoSave();
     };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
@@ -1567,7 +1571,6 @@ export class MindMapView extends FileView {
       i.setTitle("重置宽度").onClick(() => {
         delete (node as { _width?: number })._width;
         this.rebuild();
-        this.maybeAutoSave();
       })
     );
     menu.showAtMouseEvent(e);
@@ -1627,6 +1630,7 @@ export class MindMapView extends FileView {
     // 折叠/展开/增删等节点变更后重新自适应视图，
     // 避免节点位置已变但视图仍以旧的 tx/ty/scale 显示导致重叠/错位
     this.fitView();
+    this.maybeAutoSave();
   }
 
   private setLayout(key: LayoutKey) {
@@ -1743,6 +1747,7 @@ export class MindMapView extends FileView {
       this.render();
       this.dirty = true;
       this.refreshHeader();
+      this.maybeAutoSave();
     };
     input.addEventListener("blur", commit);
     input.addEventListener("keydown", (e) => {
@@ -2554,14 +2559,25 @@ export class MindMapView extends FileView {
 
   /**
    * 根据设置决定是否由编辑操作自动保存。
-   * - autoSave = true → 立即调用 save()（与定时器里的逻辑一致）
+   * - autoSave = true → 按 autoSaveInterval 做防抖保存：停止编辑 interval 秒后执行 save()
    * - autoSave = false → 什么都不做，仅保留 dirty 标记，等用户手动保存或 Ctrl+S
    * 工具栏「保存」按钮和 Ctrl+S 仍然直接调用 save()，代表用户主动行为，不走这里。
    */
   private maybeAutoSave(): void {
-    if (pluginInstance?.settings.autoSave) {
-      this.save();
+    if (!pluginInstance?.settings.autoSave) return;
+    if (this.autoSaveTimer !== undefined) {
+      window.clearTimeout(this.autoSaveTimer);
     }
+    const intervalMs = pluginInstance.settings.autoSaveInterval * 1000;
+    this.autoSaveTimer = window.setTimeout(() => {
+      this.autoSaveTimer = undefined;
+      // 触发时再检查一次设置，防止定时器等待期间用户关闭了自动保存
+      if (this.dirty && pluginInstance?.settings.autoSave) {
+        this.save().catch((e) => {
+          console.error("[MindMap] 自动保存失败:", e);
+        });
+      }
+    }, intervalMs);
   }
 
   async save(): Promise<void> {
