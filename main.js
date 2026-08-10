@@ -2984,12 +2984,8 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     __publicField(this, "toolbarMoreMenu");
     /** 所有可溢出的操作项定义（含主要操作 + 次要操作） */
     __publicField(this, "allToolbarActions", []);
-    // ---------- 平移 / 缩放 ----------
     __publicField(this, "onMouseDown", (e) => {
-      const target = e.target;
-      if (target !== this.svg && target !== this.g && !target.classList.contains("mm-edge")) {
-        return;
-      }
+      if (!this.isTargetOnRoot(e.target)) return;
       e.preventDefault();
       const startX = e.clientX;
       const startY = e.clientY;
@@ -3009,10 +3005,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     });
     __publicField(this, "onTouchStart", (e) => {
       if (e.touches.length === 1) {
-        const target = e.target;
-        if (target !== this.svg && target !== this.g && !target.classList.contains("mm-edge")) {
-          return;
-        }
+        if (!this.isTargetOnRoot(e.target)) return;
         e.preventDefault();
         const touch = e.touches[0];
         const startX = touch.clientX;
@@ -4109,7 +4102,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       const newW = apply(startW + delta);
       node._width = newW;
       self2.rebuild();
-      self2.save();
+      self2.maybeAutoSave();
     };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
@@ -4162,7 +4155,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       node._dy = startDy + ddy;
       self2.dirty = true;
       self2.refreshHeader();
-      self2.save();
+      self2.maybeAutoSave();
     };
     document.body.style.userSelect = "none";
     window.addEventListener("pointermove", move);
@@ -4200,7 +4193,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       (i) => i.setTitle("\u91CD\u7F6E\u5BBD\u5EA6").onClick(() => {
         delete node._width;
         this.rebuild();
-        this.save();
+        this.maybeAutoSave();
       })
     );
     menu.showAtMouseEvent(e);
@@ -4447,6 +4440,13 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       this.editRefocusTimer = void 0;
     }
     this.contentEl.style.height = "";
+  }
+  // ---------- 平移 / 缩放 ----------
+  // 命中判定：target 是根节点 div 自身或它的子元素
+  isTargetOnRoot(target) {
+    if (!target || !this.root) return false;
+    const rootEl = this.nodeEls.get(this.root.id);
+    return !!rootEl && (rootEl === target || rootEl.contains(target));
   }
   // ---------- 缩略图预览 ----------
   mapBounds() {
@@ -4893,6 +4893,17 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     return { topicCount, maxDepth, markedCount, stickerCount, coloredCount };
   }
   // ---------- 保存 ----------
+  /**
+   * 根据设置决定是否由编辑操作自动保存。
+   * - autoSave = true → 立即调用 save()（与定时器里的逻辑一致）
+   * - autoSave = false → 什么都不做，仅保留 dirty 标记，等用户手动保存或 Ctrl+S
+   * 工具栏「保存」按钮和 Ctrl+S 仍然直接调用 save()，代表用户主动行为，不走这里。
+   */
+  maybeAutoSave() {
+    if (pluginInstance == null ? void 0 : pluginInstance.settings.autoSave) {
+      this.save();
+    }
+  }
   async save() {
     if (!this.file || !this.root) return;
     try {

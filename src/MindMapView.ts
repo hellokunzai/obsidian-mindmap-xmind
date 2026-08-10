@@ -1466,7 +1466,7 @@ export class MindMapView extends FileView {
       const newW = apply(startW + delta);
       (node as { _width?: number })._width = newW;
       self.rebuild();
-      self.save();
+      self.maybeAutoSave();
     };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
@@ -1524,7 +1524,7 @@ export class MindMapView extends FileView {
       (node as { _dy?: number })._dy = startDy + ddy;
       self.dirty = true;
       self.refreshHeader();
-      self.save();
+      self.maybeAutoSave();
     };
     document.body.style.userSelect = "none";
     window.addEventListener("pointermove", move);
@@ -1567,7 +1567,7 @@ export class MindMapView extends FileView {
       i.setTitle("重置宽度").onClick(() => {
         delete (node as { _width?: number })._width;
         this.rebuild();
-        this.save();
+        this.maybeAutoSave();
       })
     );
     menu.showAtMouseEvent(e);
@@ -1862,15 +1862,16 @@ export class MindMapView extends FileView {
 
   // ---------- 平移 / 缩放 ----------
 
+  // 命中判定：target 是根节点 div 自身或它的子元素
+  private isTargetOnRoot(target: Element | null): boolean {
+    if (!target || !this.root) return false;
+    const rootEl = this.nodeEls.get(this.root.id);
+    return !!rootEl && (rootEl === target || rootEl.contains(target));
+  }
+
   private onMouseDown = (e: MouseEvent) => {
-    const target = e.target as Element;
-    if (
-      target !== this.svg &&
-      target !== this.g &&
-      !target.classList.contains("mm-edge")
-    ) {
-      return;
-    }
+    // 只允许在根节点（中心主题）上拖动整张导图；空白处与连线不再平移画布
+    if (!this.isTargetOnRoot(e.target as Element | null)) return;
     e.preventDefault();
     const startX = e.clientX;
     const startY = e.clientY;
@@ -1891,14 +1892,8 @@ export class MindMapView extends FileView {
 
   private onTouchStart = (e: TouchEvent) => {
     if (e.touches.length === 1) {
-      const target = e.target as Element;
-      if (
-        target !== this.svg &&
-        target !== this.g &&
-        !target.classList.contains("mm-edge")
-      ) {
-        return;
-      }
+      // 只允许在根节点上拖动整张导图；空白处不再平移画布
+      if (!this.isTargetOnRoot(e.target as Element | null)) return;
       e.preventDefault();
       const touch = e.touches[0];
       const startX = touch.clientX;
@@ -2556,6 +2551,18 @@ export class MindMapView extends FileView {
   }
 
   // ---------- 保存 ----------
+
+  /**
+   * 根据设置决定是否由编辑操作自动保存。
+   * - autoSave = true → 立即调用 save()（与定时器里的逻辑一致）
+   * - autoSave = false → 什么都不做，仅保留 dirty 标记，等用户手动保存或 Ctrl+S
+   * 工具栏「保存」按钮和 Ctrl+S 仍然直接调用 save()，代表用户主动行为，不走这里。
+   */
+  private maybeAutoSave(): void {
+    if (pluginInstance?.settings.autoSave) {
+      this.save();
+    }
+  }
 
   async save(): Promise<void> {
     if (!this.file || !this.root) return;
