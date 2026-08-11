@@ -1,6 +1,6 @@
 {
   "name": "obsidian-mindmap-mmap",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "View and interactively edit XMind .xmind mind maps inside Obsidian",
   "main": "main.js",
   "scripts": {
@@ -22,6 +22,6 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "jszip": "^3.10.1"
+    "fflate": "^0.8.3"
   }
 }

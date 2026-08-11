@@ -10,6 +10,7 @@ import {
   ToggleComponent,
   SliderComponent,
   ExtraButtonComponent,
+  addIcon,
 } from "obsidian";
 import {
   MindMapView,
@@ -23,6 +24,7 @@ import type { LayoutKey, ThemeKey } from "./MindMapView";
 import { serializeXMind } from "./xmind";
 import { genId } from "./util";
 import type { XSheet, XTopic } from "./model";
+import { registerToolbarIcons } from "./icons";
 
 // 插件设置接口
 export interface MindMapPluginSettings {
@@ -255,20 +257,14 @@ export default class MindMapPlugin extends Plugin {
     // 设置插件实例引用（让 MindMapView 能访问插件进行自动保存注册）
     setPluginInstance(this);
 
+    // 注册工具栏自定义图标
+    registerToolbarIcons();
+
     // 注册自定义「思维导图」图标（供右键菜单使用）
-    // 旧版 Obsidian 可能没有 addIcon，做存在性检测 + 降级，避免 onload 抛错导致插件加载失败
-    try {
-      const maybeAddIcon = (this as unknown as { addIcon?: (id: string, svg: string) => void }).addIcon;
-      if (typeof maybeAddIcon === "function") {
-        maybeAddIcon.call(
-          this,
-          "mindmap",
-          `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8.2 11L16 6.6M8.2 13L16 17.4"/></svg>`
-        );
-      }
-    } catch (e) {
-      console.warn("[MindMap] 注册自定义图标失败，已降级：", e);
-    }
+    addIcon(
+      "mindmap",
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8.2 11L16 6.6M8.2 13L16 17.4"/></svg>`
+    );
 
     this.registerView(VIEW_TYPE_MINDMAP, (leaf) => new MindMapView(leaf));
     this.registerExtensions(["xmind"], VIEW_TYPE_MINDMAP);
