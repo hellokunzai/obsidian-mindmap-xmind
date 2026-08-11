@@ -2022,10 +2022,21 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   getViewType() {
     return VIEW_TYPE_MINDMAP;
   }
-  /** 创建一个带图标的工具栏按钮：通过 Obsidian 的 setIcon 渲染 lucide 图标，自动应用主题色与正确命名空间 */
+  /** 用 Obsidian 官方 getIcon() 选出一个确定存在的图标名；都不存在则回退到内置的 settings 图标。 */
+  resolveIcon(candidates) {
+    for (const name of candidates) {
+      if ((0, import_obsidian.getIcon)(name)) return name;
+    }
+    return "settings";
+  }
+  /** 为按钮设置 Obsidian 内置 lucide 图标（官方 setIcon 渲染，自动套用主题色） */
+  applyIcon(btn, lucideName) {
+    (0, import_obsidian.setIcon)(btn, lucideName);
+  }
+  /** 创建一个带图标的工具栏按钮 */
   createIconBtn(parent, lucideName, title, onClick, cls) {
     const btn = parent.createEl("button", { cls });
-    (0, import_obsidian.setIcon)(btn, lucideName);
+    this.applyIcon(btn, lucideName);
     btn.setAttribute("aria-label", title);
     btn.addEventListener("click", onClick);
     return btn;
@@ -2034,26 +2045,26 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const toolbar = parent.createDiv({ cls: "mm-toolbar" });
     this.toolbarPrimaryEl = toolbar.createDiv({ cls: "mm-toolbar-primary" });
     this.allToolbarActions = [
-      { id: "fitView", lucideName: _MindMapView.ICONS.fitView, title: "\u9002\u5E94\u89C6\u56FE", onClick: () => this.fitView() },
-      { id: "save", lucideName: _MindMapView.ICONS.save, title: "\u4FDD\u5B58", onClick: () => this.save() },
-      { id: "addChild", lucideName: _MindMapView.ICONS.addChild, title: "\u5B50\u4E3B\u9898", onClick: () => {
+      { id: "fitView", lucideName: this.resolveIcon(_MindMapView.ICONS.fitView), title: "\u9002\u5E94\u89C6\u56FE", onClick: () => this.fitView() },
+      { id: "save", lucideName: this.resolveIcon(_MindMapView.ICONS.save), title: "\u4FDD\u5B58", onClick: () => this.save() },
+      { id: "addChild", lucideName: this.resolveIcon(_MindMapView.ICONS.addChild), title: "\u5B50\u4E3B\u9898", onClick: () => {
         var _a2, _b2, _c;
         return this.addChildNode((_c = (_b2 = this.selectedId) != null ? _b2 : (_a2 = this.root) == null ? void 0 : _a2.id) != null ? _c : "");
       } },
-      { id: "addSibling", lucideName: _MindMapView.ICONS.addSibling, title: "\u540C\u7EA7\u4E3B\u9898", onClick: () => {
+      { id: "addSibling", lucideName: this.resolveIcon(_MindMapView.ICONS.addSibling), title: "\u540C\u7EA7\u4E3B\u9898", onClick: () => {
         if (this.selectedId) this.addSiblingNode(this.selectedId);
       } },
-      { id: "delete", lucideName: _MindMapView.ICONS.delete, title: "\u5220\u9664", onClick: () => {
+      { id: "delete", lucideName: this.resolveIcon(_MindMapView.ICONS.delete), title: "\u5220\u9664", onClick: () => {
         if (this.selectedId) this.deleteNode(this.selectedId);
       } },
-      { id: "collapse", lucideName: _MindMapView.ICONS.collapse, title: "\u6298\u53E0/\u5C55\u5F00", onClick: () => {
+      { id: "collapse", lucideName: this.resolveIcon(_MindMapView.ICONS.collapse), title: "\u6298\u53E0/\u5C55\u5F00", onClick: () => {
         if (this.selectedId) this.toggleNode(this.selectedId);
       } },
-      { id: "exportSvg", lucideName: _MindMapView.ICONS.exportSvg, title: "\u5BFC\u51FA SVG", onClick: () => this.exportSVG() },
-      { id: "exportPng", lucideName: _MindMapView.ICONS.exportPng, title: "\u5BFC\u51FA PNG", onClick: () => this.exportPNG() },
+      { id: "exportSvg", lucideName: this.resolveIcon(_MindMapView.ICONS.exportSvg), title: "\u5BFC\u51FA SVG", onClick: () => this.exportSVG() },
+      { id: "exportPng", lucideName: this.resolveIcon(_MindMapView.ICONS.exportPng), title: "\u5BFC\u51FA PNG", onClick: () => this.exportPNG() },
       {
         id: "minimap",
-        lucideName: _MindMapView.ICONS.minimap,
+        lucideName: this.resolveIcon(_MindMapView.ICONS.minimap),
         title: "\u7F29\u7565\u56FE",
         onClick: () => {
           this.showMinimap = !this.showMinimap;
@@ -2064,7 +2075,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       },
       {
         id: "panel",
-        lucideName: _MindMapView.ICONS.panel,
+        lucideName: this.resolveIcon(_MindMapView.ICONS.panel),
         title: "\u6253\u5F00\u9762\u677F",
         onClick: () => {
           this.toggleSidePanel();
@@ -2086,7 +2097,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     this.toolbarMoreWrap = secondary.createDiv({ cls: "mm-toolbar-more" });
     this.toolbarMoreBtn = this.createIconBtn(
       this.toolbarMoreWrap,
-      _MindMapView.ICONS.more,
+      this.resolveIcon(_MindMapView.ICONS.more),
       "\u66F4\u591A",
       () => this.toggleMoreDropdown(),
       "mm-tb-more-btn"
@@ -3811,19 +3822,22 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     }
   }
 };
-// ---------- 工具栏：图标 Lucide 名表（Obsidian 推荐：复用 setIcon 注入 lucide 图标，避开 HTML/SVG 命名空间问题） ----------
+// ---------- 工具栏：图标（Obsidian 官方渲染：setIcon / getIcon） ----------
+// 每个操作提供一组候选 lucide 图标名（按偏好排序）。运行时用 Obsidian 官方的
+// getIcon() 选出一个确定存在的名称，再交给 setIcon() 渲染，保证图标一定显示、
+// 不出现空灰框。候选名均取自 Obsidian 内置 lucide 图标集。
 __publicField(_MindMapView, "ICONS", {
-  fitView: "maximize-2",
-  save: "save",
-  addChild: "plus-circle",
-  addSibling: "plus",
-  delete: "trash-2",
-  collapse: "shrink",
-  more: "more-horizontal",
-  exportSvg: "file-code-2",
-  exportPng: "file-image",
-  minimap: "layout-grid",
-  panel: "panel-right"
+  fitView: ["maximize-2", "maximize"],
+  save: ["save"],
+  addChild: ["plus-circle", "plus"],
+  addSibling: ["plus"],
+  delete: ["trash-2", "trash"],
+  collapse: ["shrink", "minimize", "chevrons-down-up"],
+  more: ["more-horizontal", "dots-horizontal", "more-vertical"],
+  exportSvg: ["file-code-2", "file-code", "code-2", "code"],
+  exportPng: ["file-image", "image"],
+  minimap: ["layout-grid", "grid"],
+  panel: ["panel-right", "sidebar-right"]
 });
 var MindMapView = _MindMapView;
 function makeThumbSvg(kind, active) {

@@ -6,6 +6,7 @@ import {
   Notice,
   Platform,
   setIcon,
+  getIcon,
 } from "obsidian";
 import type { XSheet, XTopic } from "./model";
 import {
@@ -358,23 +359,39 @@ export class MindMapView extends FileView {
     return VIEW_TYPE_MINDMAP;
   }
 
-  // ---------- 工具栏：图标 Lucide 名表（Obsidian 推荐：复用 setIcon 注入 lucide 图标，避开 HTML/SVG 命名空间问题） ----------
+  // ---------- 工具栏：图标（Obsidian 官方渲染：setIcon / getIcon） ----------
+  // 每个操作提供一组候选 lucide 图标名（按偏好排序）。运行时用 Obsidian 官方的
+  // getIcon() 选出一个确定存在的名称，再交给 setIcon() 渲染，保证图标一定显示、
+  // 不出现空灰框。候选名均取自 Obsidian 内置 lucide 图标集。
 
-  private static ICONS = {
-    fitView: "maximize-2",
-    save: "save",
-    addChild: "plus-circle",
-    addSibling: "plus",
-    delete: "trash-2",
-    collapse: "shrink",
-    more: "more-horizontal",
-    exportSvg: "file-code-2",
-    exportPng: "file-image",
-    minimap: "layout-grid",
-    panel: "panel-right",
+  private static ICONS: Record<string, string[]> = {
+    fitView: ["maximize-2", "maximize"],
+    save: ["save"],
+    addChild: ["plus-circle", "plus"],
+    addSibling: ["plus"],
+    delete: ["trash-2", "trash"],
+    collapse: ["shrink", "minimize", "chevrons-down-up"],
+    more: ["more-horizontal", "dots-horizontal", "more-vertical"],
+    exportSvg: ["file-code-2", "file-code", "code-2", "code"],
+    exportPng: ["file-image", "image"],
+    minimap: ["layout-grid", "grid"],
+    panel: ["panel-right", "sidebar-right"],
   };
 
-  /** 创建一个带图标的工具栏按钮：通过 Obsidian 的 setIcon 渲染 lucide 图标，自动应用主题色与正确命名空间 */
+  /** 用 Obsidian 官方 getIcon() 选出一个确定存在的图标名；都不存在则回退到内置的 settings 图标。 */
+  private resolveIcon(candidates: string[]): string {
+    for (const name of candidates) {
+      if (getIcon(name)) return name;
+    }
+    return "settings";
+  }
+
+  /** 为按钮设置 Obsidian 内置 lucide 图标（官方 setIcon 渲染，自动套用主题色） */
+  private applyIcon(btn: HTMLElement, lucideName: string): void {
+    setIcon(btn, lucideName);
+  }
+
+  /** 创建一个带图标的工具栏按钮 */
   private createIconBtn(
     parent: HTMLElement,
     lucideName: string,
@@ -383,7 +400,7 @@ export class MindMapView extends FileView {
     cls?: string
   ): HTMLButtonElement {
     const btn = parent.createEl("button", { cls });
-    setIcon(btn, lucideName);
+    this.applyIcon(btn, lucideName);
     btn.setAttribute("aria-label", title);
     btn.addEventListener("click", onClick);
     return btn;
@@ -413,18 +430,18 @@ export class MindMapView extends FileView {
 
     this.toolbarPrimaryEl = toolbar.createDiv({ cls: "mm-toolbar-primary" });
 
-    // 收集所有操作项
+    // 收集所有操作项（图标名在运行时经 getIcon 解析为当前 Obsidian 确定存在的名称）
     this.allToolbarActions = [
-      { id: "fitView", lucideName: MindMapView.ICONS.fitView, title: "适应视图", onClick: () => this.fitView() },
-      { id: "save", lucideName: MindMapView.ICONS.save, title: "保存", onClick: () => this.save() },
-      { id: "addChild", lucideName: MindMapView.ICONS.addChild, title: "子主题", onClick: () => this.addChildNode(this.selectedId ?? this.root?.id ?? "") },
-      { id: "addSibling", lucideName: MindMapView.ICONS.addSibling, title: "同级主题", onClick: () => { if (this.selectedId) this.addSiblingNode(this.selectedId); } },
-      { id: "delete", lucideName: MindMapView.ICONS.delete, title: "删除", onClick: () => { if (this.selectedId) this.deleteNode(this.selectedId); } },
-      { id: "collapse", lucideName: MindMapView.ICONS.collapse, title: "折叠/展开", onClick: () => { if (this.selectedId) this.toggleNode(this.selectedId); } },
-      { id: "exportSvg", lucideName: MindMapView.ICONS.exportSvg, title: "导出 SVG", onClick: () => this.exportSVG() },
-      { id: "exportPng", lucideName: MindMapView.ICONS.exportPng, title: "导出 PNG", onClick: () => this.exportPNG() },
+      { id: "fitView", lucideName: this.resolveIcon(MindMapView.ICONS.fitView), title: "适应视图", onClick: () => this.fitView() },
+      { id: "save", lucideName: this.resolveIcon(MindMapView.ICONS.save), title: "保存", onClick: () => this.save() },
+      { id: "addChild", lucideName: this.resolveIcon(MindMapView.ICONS.addChild), title: "子主题", onClick: () => this.addChildNode(this.selectedId ?? this.root?.id ?? "") },
+      { id: "addSibling", lucideName: this.resolveIcon(MindMapView.ICONS.addSibling), title: "同级主题", onClick: () => { if (this.selectedId) this.addSiblingNode(this.selectedId); } },
+      { id: "delete", lucideName: this.resolveIcon(MindMapView.ICONS.delete), title: "删除", onClick: () => { if (this.selectedId) this.deleteNode(this.selectedId); } },
+      { id: "collapse", lucideName: this.resolveIcon(MindMapView.ICONS.collapse), title: "折叠/展开", onClick: () => { if (this.selectedId) this.toggleNode(this.selectedId); } },
+      { id: "exportSvg", lucideName: this.resolveIcon(MindMapView.ICONS.exportSvg), title: "导出 SVG", onClick: () => this.exportSVG() },
+      { id: "exportPng", lucideName: this.resolveIcon(MindMapView.ICONS.exportPng), title: "导出 PNG", onClick: () => this.exportPNG() },
       {
-        id: "minimap", lucideName: MindMapView.ICONS.minimap, title: "缩略图",
+        id: "minimap", lucideName: this.resolveIcon(MindMapView.ICONS.minimap), title: "缩略图",
         onClick: () => {
           this.showMinimap = !this.showMinimap;
           this.minimap.setCssStyles({ display: this.showMinimap ? "" : "none" })
@@ -433,7 +450,7 @@ export class MindMapView extends FileView {
         update: (btn) => btn.classList.toggle("is-active", this.showMinimap),
       },
       {
-        id: "panel", lucideName: MindMapView.ICONS.panel, title: "打开面板",
+        id: "panel", lucideName: this.resolveIcon(MindMapView.ICONS.panel), title: "打开面板",
         onClick: () => {
           this.toggleSidePanel();
           this.updateToolbarState();
@@ -454,7 +471,7 @@ export class MindMapView extends FileView {
     const secondary = toolbar.createDiv({ cls: "mm-toolbar-secondary" });
     this.toolbarMoreWrap = secondary.createDiv({ cls: "mm-toolbar-more" });
     this.toolbarMoreBtn = this.createIconBtn(
-      this.toolbarMoreWrap, MindMapView.ICONS.more, "更多", () => this.toggleMoreDropdown(), "mm-tb-more-btn"
+      this.toolbarMoreWrap, this.resolveIcon(MindMapView.ICONS.more), "更多", () => this.toggleMoreDropdown(), "mm-tb-more-btn"
     );
     this.toolbarMoreMenu = this.toolbarMoreWrap.createDiv({ cls: "mm-toolbar-more-menu" });
 

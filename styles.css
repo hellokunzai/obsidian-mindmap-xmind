@@ -77,6 +77,7 @@
   width: 18px;
   height: 18px;
   display: block;
+  color: inherit;
 }
 
 /* 下拉菜单项中的 svg（与文字并排） */
