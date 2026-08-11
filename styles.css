@@ -71,6 +71,21 @@
   flex-shrink: 0;
 }
 
+/* setIcon 注入的 lucide SVG 默认 24×24，需要缩放到按钮内容区（30-10=20px） */
+.mm-tb-action svg,
+.mm-tb-more-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* 下拉菜单项中的 svg（与文字并排） */
+.mm-tb-menu-item svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
 .mm-tb-more-btn.is-active {
   background: var(--interactive-hover);
 }

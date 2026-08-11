@@ -33,7 +33,6 @@ import {
 
 // 插件设置类型（类型导入，避免运行时循环依赖）
 import type { MindMapPluginSettings } from "./main";
-import { TOOLBAR_ICONS, type ToolbarIconKey } from "./icons";
 
 // 主题配色方案
 export type ThemeKey = "classic" | "rainbow" | "pastel";
@@ -359,24 +358,32 @@ export class MindMapView extends FileView {
     return VIEW_TYPE_MINDMAP;
   }
 
-  // ---------- 工具栏：图标 ----------
+  // ---------- 工具栏：图标 Lucide 名表（Obsidian 推荐：复用 setIcon 注入 lucide 图标，避开 HTML/SVG 命名空间问题） ----------
 
-  /** 所有工具栏图标名称（业务键，实际注册 ID 在 src/icons.ts 中） */
-  private static ICON_NAMES = [
-    "fitView", "save", "addChild", "addSibling", "delete", "collapse",
-    "more", "exportSvg", "exportPng", "minimap", "panel",
-  ] as const;
+  private static ICONS = {
+    fitView: "maximize-2",
+    save: "save",
+    addChild: "plus-circle",
+    addSibling: "plus",
+    delete: "trash-2",
+    collapse: "shrink",
+    more: "more-horizontal",
+    exportSvg: "file-code-2",
+    exportPng: "file-image",
+    minimap: "layout-grid",
+    panel: "panel-right",
+  };
 
-  /** 创建一个带图标的工具栏按钮 */
+  /** 创建一个带图标的工具栏按钮：通过 Obsidian 的 setIcon 渲染 lucide 图标，自动应用主题色与正确命名空间 */
   private createIconBtn(
     parent: HTMLElement,
-    iconName: typeof MindMapView.ICON_NAMES[number],
+    lucideName: string,
     title: string,
     onClick: () => void,
     cls?: string
   ): HTMLButtonElement {
     const btn = parent.createEl("button", { cls });
-    setIcon(btn, TOOLBAR_ICONS[iconName as ToolbarIconKey]);
+    setIcon(btn, lucideName);
     btn.setAttribute("aria-label", title);
     btn.addEventListener("click", onClick);
     return btn;
@@ -392,7 +399,7 @@ export class MindMapView extends FileView {
   /** 所有可溢出的操作项定义（含主要操作 + 次要操作） */
   private allToolbarActions: Array<{
     id: string;
-    iconName: typeof MindMapView.ICON_NAMES[number];
+    lucideName: string;
     title: string;
     onClick: () => void;
     update?: (btn: HTMLButtonElement) => void;
@@ -408,16 +415,16 @@ export class MindMapView extends FileView {
 
     // 收集所有操作项
     this.allToolbarActions = [
-      { id: "fitView", iconName: "fitView", title: "适应视图", onClick: () => this.fitView() },
-      { id: "save", iconName: "save", title: "保存", onClick: () => this.save() },
-      { id: "addChild", iconName: "addChild", title: "子主题", onClick: () => this.addChildNode(this.selectedId ?? this.root?.id ?? "") },
-      { id: "addSibling", iconName: "addSibling", title: "同级主题", onClick: () => { if (this.selectedId) this.addSiblingNode(this.selectedId); } },
-      { id: "delete", iconName: "delete", title: "删除", onClick: () => { if (this.selectedId) this.deleteNode(this.selectedId); } },
-      { id: "collapse", iconName: "collapse", title: "折叠/展开", onClick: () => { if (this.selectedId) this.toggleNode(this.selectedId); } },
-      { id: "exportSvg", iconName: "exportSvg", title: "导出 SVG", onClick: () => this.exportSVG() },
-      { id: "exportPng", iconName: "exportPng", title: "导出 PNG", onClick: () => this.exportPNG() },
+      { id: "fitView", lucideName: MindMapView.ICONS.fitView, title: "适应视图", onClick: () => this.fitView() },
+      { id: "save", lucideName: MindMapView.ICONS.save, title: "保存", onClick: () => this.save() },
+      { id: "addChild", lucideName: MindMapView.ICONS.addChild, title: "子主题", onClick: () => this.addChildNode(this.selectedId ?? this.root?.id ?? "") },
+      { id: "addSibling", lucideName: MindMapView.ICONS.addSibling, title: "同级主题", onClick: () => { if (this.selectedId) this.addSiblingNode(this.selectedId); } },
+      { id: "delete", lucideName: MindMapView.ICONS.delete, title: "删除", onClick: () => { if (this.selectedId) this.deleteNode(this.selectedId); } },
+      { id: "collapse", lucideName: MindMapView.ICONS.collapse, title: "折叠/展开", onClick: () => { if (this.selectedId) this.toggleNode(this.selectedId); } },
+      { id: "exportSvg", lucideName: MindMapView.ICONS.exportSvg, title: "导出 SVG", onClick: () => this.exportSVG() },
+      { id: "exportPng", lucideName: MindMapView.ICONS.exportPng, title: "导出 PNG", onClick: () => this.exportPNG() },
       {
-        id: "minimap", iconName: "minimap", title: "缩略图",
+        id: "minimap", lucideName: MindMapView.ICONS.minimap, title: "缩略图",
         onClick: () => {
           this.showMinimap = !this.showMinimap;
           this.minimap.setCssStyles({ display: this.showMinimap ? "" : "none" })
@@ -426,7 +433,7 @@ export class MindMapView extends FileView {
         update: (btn) => btn.classList.toggle("is-active", this.showMinimap),
       },
       {
-        id: "panel", iconName: "panel", title: "打开面板",
+        id: "panel", lucideName: MindMapView.ICONS.panel, title: "打开面板",
         onClick: () => {
           this.toggleSidePanel();
           this.updateToolbarState();
@@ -438,7 +445,7 @@ export class MindMapView extends FileView {
     for (const action of this.allToolbarActions) {
       // 内联按钮（初始全部可见，后续由溢出检测控制）
       action.inlineBtn = this.createIconBtn(
-        this.toolbarPrimaryEl, action.iconName, action.title, action.onClick, "mm-tb-action"
+        this.toolbarPrimaryEl, action.lucideName, action.title, action.onClick, "mm-tb-action"
       );
       if (action.update) action.update(action.inlineBtn);
     }
@@ -447,14 +454,14 @@ export class MindMapView extends FileView {
     const secondary = toolbar.createDiv({ cls: "mm-toolbar-secondary" });
     this.toolbarMoreWrap = secondary.createDiv({ cls: "mm-toolbar-more" });
     this.toolbarMoreBtn = this.createIconBtn(
-      this.toolbarMoreWrap, "more", "更多", () => this.toggleMoreDropdown(), "mm-tb-more-btn"
+      this.toolbarMoreWrap, MindMapView.ICONS.more, "更多", () => this.toggleMoreDropdown(), "mm-tb-more-btn"
     );
     this.toolbarMoreMenu = this.toolbarMoreWrap.createDiv({ cls: "mm-toolbar-more-menu" });
 
     // 为每个操作创建对应的菜单项（默认隐藏在 more 菜单中）
     for (const action of this.allToolbarActions) {
       action.menuItem = this.toolbarMoreMenu.createEl("button", { cls: "mm-tb-menu-item" });
-      setIcon(action.menuItem!, TOOLBAR_ICONS[action.iconName as ToolbarIconKey]);
+      setIcon(action.menuItem, action.lucideName);
       const labelSpan = action.menuItem.createSpan();
       labelSpan.textContent = action.title;
       action.menuItem.setAttribute("aria-label", action.title);
@@ -596,7 +603,7 @@ export class MindMapView extends FileView {
   }
 
   getIcon(): string {
-    return "graph";
+    return "git-graph";
   }
 
   async onOpen() {

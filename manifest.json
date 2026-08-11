@@ -1,9 +1,9 @@
 {
   "id": "mindmap-xmind",
   "name": "Mindmap Xmind",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "minAppVersion": "1.4.0",
   "description": "View and interactively edit XMind mind maps (.xmind format).",
-  "author": "hellokunzai",
+  "author": "WorkBuddy",
   "isDesktopOnly": false
 }
