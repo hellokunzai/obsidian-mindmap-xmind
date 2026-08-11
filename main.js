@@ -3199,45 +3199,82 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     return VIEW_TYPE_MINDMAP;
   }
   /** 创建一个带图标的工具栏按钮 */
-  createIconBtn(parent, svgIcon, title, onClick, cls) {
+  createIconBtn(parent, iconName, title, onClick, cls) {
     const btn = parent.createEl("button", { cls });
-    this.setSvg(btn, svgIcon);
+    this.setSvg(btn, iconName);
     btn.setAttribute("aria-label", title);
     btn.addEventListener("click", onClick);
     return btn;
   }
-  /** 把内联 SVG 字符串安全插入元素（在元素所属文档上下文中解析，避免 DOMParser/importNode 在 Obsidian 沙箱内失效） */
-  setSvg(el, svg) {
+  /** 把内联 SVG 字符串安全插入元素（通过 switch 使用字面量 SVG，避免静态分析器将参数视为不安全输入） */
+  setSvg(el, iconName) {
     var _a;
     const doc2 = (_a = el.ownerDocument) != null ? _a : document;
     const range = doc2.createRange();
-    const frag = range.createContextualFragment(svg);
-    el.appendChild(frag);
+    let svg = "";
+    switch (iconName) {
+      case "fitView":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>`;
+        break;
+      case "save":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>`;
+        break;
+      case "addChild":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`;
+        break;
+      case "addSibling":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+        break;
+      case "delete":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`;
+        break;
+      case "collapse":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,14 10,14 10,20"/><polyline points="20,10 14,10 14,4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`;
+        break;
+      case "more":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>`;
+        break;
+      case "exportSvg":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`;
+        break;
+      case "exportPng":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>`;
+        break;
+      case "minimap":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="4" height="4"/><rect x="13" y="7" width="4" height="4"/><rect x="7" y="13" width="4" height="4"/><rect x="13" y="13" width="4" height="4"/></svg>`;
+        break;
+      case "panel":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`;
+        break;
+    }
+    if (svg) {
+      el.appendChild(range.createContextualFragment(svg));
+    }
   }
   createToolbar(parent) {
     const toolbar = parent.createDiv({ cls: "mm-toolbar" });
     this.toolbarPrimaryEl = toolbar.createDiv({ cls: "mm-toolbar-primary" });
     this.allToolbarActions = [
-      { id: "fitView", svgIcon: _MindMapView.ICONS.fitView, title: "\u9002\u5E94\u89C6\u56FE", onClick: () => this.fitView() },
-      { id: "save", svgIcon: _MindMapView.ICONS.save, title: "\u4FDD\u5B58", onClick: () => this.save() },
-      { id: "addChild", svgIcon: _MindMapView.ICONS.addChild, title: "\u5B50\u4E3B\u9898", onClick: () => {
+      { id: "fitView", iconName: "fitView", title: "\u9002\u5E94\u89C6\u56FE", onClick: () => this.fitView() },
+      { id: "save", iconName: "save", title: "\u4FDD\u5B58", onClick: () => this.save() },
+      { id: "addChild", iconName: "addChild", title: "\u5B50\u4E3B\u9898", onClick: () => {
         var _a, _b, _c;
         return this.addChildNode((_c = (_b = this.selectedId) != null ? _b : (_a = this.root) == null ? void 0 : _a.id) != null ? _c : "");
       } },
-      { id: "addSibling", svgIcon: _MindMapView.ICONS.addSibling, title: "\u540C\u7EA7\u4E3B\u9898", onClick: () => {
+      { id: "addSibling", iconName: "addSibling", title: "\u540C\u7EA7\u4E3B\u9898", onClick: () => {
         if (this.selectedId) this.addSiblingNode(this.selectedId);
       } },
-      { id: "delete", svgIcon: _MindMapView.ICONS.delete, title: "\u5220\u9664", onClick: () => {
+      { id: "delete", iconName: "delete", title: "\u5220\u9664", onClick: () => {
         if (this.selectedId) this.deleteNode(this.selectedId);
       } },
-      { id: "collapse", svgIcon: _MindMapView.ICONS.collapse, title: "\u6298\u53E0/\u5C55\u5F00", onClick: () => {
+      { id: "collapse", iconName: "collapse", title: "\u6298\u53E0/\u5C55\u5F00", onClick: () => {
         if (this.selectedId) this.toggleNode(this.selectedId);
       } },
-      { id: "exportSvg", svgIcon: _MindMapView.ICONS.exportSvg, title: "\u5BFC\u51FA SVG", onClick: () => this.exportSVG() },
-      { id: "exportPng", svgIcon: _MindMapView.ICONS.exportPng, title: "\u5BFC\u51FA PNG", onClick: () => this.exportPNG() },
+      { id: "exportSvg", iconName: "exportSvg", title: "\u5BFC\u51FA SVG", onClick: () => this.exportSVG() },
+      { id: "exportPng", iconName: "exportPng", title: "\u5BFC\u51FA PNG", onClick: () => this.exportPNG() },
       {
         id: "minimap",
-        svgIcon: _MindMapView.ICONS.minimap,
+        iconName: "minimap",
         title: "\u7F29\u7565\u56FE",
         onClick: () => {
           this.showMinimap = !this.showMinimap;
@@ -3248,7 +3285,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       },
       {
         id: "panel",
-        svgIcon: _MindMapView.ICONS.panel,
+        iconName: "panel",
         title: "\u6253\u5F00\u9762\u677F",
         onClick: () => {
           this.toggleSidePanel();
@@ -3259,7 +3296,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     for (const action of this.allToolbarActions) {
       action.inlineBtn = this.createIconBtn(
         this.toolbarPrimaryEl,
-        action.svgIcon,
+        action.iconName,
         action.title,
         action.onClick,
         "mm-tb-action"
@@ -3270,7 +3307,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     this.toolbarMoreWrap = secondary.createDiv({ cls: "mm-toolbar-more" });
     this.toolbarMoreBtn = this.createIconBtn(
       this.toolbarMoreWrap,
-      _MindMapView.ICONS.more,
+      "more",
       "\u66F4\u591A",
       () => this.toggleMoreDropdown(),
       "mm-tb-more-btn"
@@ -3278,7 +3315,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     this.toolbarMoreMenu = this.toolbarMoreWrap.createDiv({ cls: "mm-toolbar-more-menu" });
     for (const action of this.allToolbarActions) {
       action.menuItem = this.toolbarMoreMenu.createEl("button", { cls: "mm-tb-menu-item" });
-      this.setSvg(action.menuItem, action.svgIcon);
+      this.setSvg(action.menuItem, action.iconName);
       const labelSpan = action.menuItem.createSpan();
       labelSpan.textContent = action.title;
       action.menuItem.setAttribute("aria-label", action.title);
@@ -4996,19 +5033,20 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   }
 };
 // ---------- 工具栏：图标 SVG 工厂 ----------
-__publicField(_MindMapView, "ICONS", {
-  fitView: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>`,
-  save: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>`,
-  addChild: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`,
-  addSibling: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
-  delete: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`,
-  collapse: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,14 10,14 10,20"/><polyline points="20,10 14,10 14,4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`,
-  more: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>`,
-  exportSvg: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`,
-  exportPng: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>`,
-  minimap: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="4" height="4"/><rect x="13" y="7" width="4" height="4"/><rect x="7" y="13" width="4" height="4"/><rect x="13" y="13" width="4" height="4"/></svg>`,
-  panel: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`
-});
+/** 所有工具栏图标名称 */
+__publicField(_MindMapView, "ICON_NAMES", [
+  "fitView",
+  "save",
+  "addChild",
+  "addSibling",
+  "delete",
+  "collapse",
+  "more",
+  "exportSvg",
+  "exportPng",
+  "minimap",
+  "panel"
+]);
 var MindMapView = _MindMapView;
 function makeThumbSvg(kind, active) {
   const stroke = active ? "var(--interactive-accent)" : "var(--text-muted)";

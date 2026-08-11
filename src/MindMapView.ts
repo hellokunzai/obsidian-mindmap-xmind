@@ -359,41 +359,70 @@ export class MindMapView extends FileView {
 
   // ---------- 工具栏：图标 SVG 工厂 ----------
 
-  private static ICONS = {
-    fitView: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>`,
-    save: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>`,
-    addChild: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`,
-    addSibling: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
-    delete: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`,
-    collapse: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,14 10,14 10,20"/><polyline points="20,10 14,10 14,4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`,
-    more: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>`,
-    exportSvg: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`,
-    exportPng: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>`,
-    minimap: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="4" height="4"/><rect x="13" y="7" width="4" height="4"/><rect x="7" y="13" width="4" height="4"/><rect x="13" y="13" width="4" height="4"/></svg>`,
-    panel: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`,
-  };
+  /** 所有工具栏图标名称 */
+  private static ICON_NAMES = [
+    "fitView", "save", "addChild", "addSibling", "delete", "collapse",
+    "more", "exportSvg", "exportPng", "minimap", "panel",
+  ] as const;
 
   /** 创建一个带图标的工具栏按钮 */
   private createIconBtn(
     parent: HTMLElement,
-    svgIcon: string,
+    iconName: typeof MindMapView.ICON_NAMES[number],
     title: string,
     onClick: () => void,
     cls?: string
   ): HTMLButtonElement {
     const btn = parent.createEl("button", { cls });
-    this.setSvg(btn, svgIcon);
+    this.setSvg(btn, iconName);
     btn.setAttribute("aria-label", title);
     btn.addEventListener("click", onClick);
     return btn;
   }
 
-  /** 把内联 SVG 字符串安全插入元素（在元素所属文档上下文中解析，避免 DOMParser/importNode 在 Obsidian 沙箱内失效） */
-  private setSvg(el: HTMLElement, svg: string) {
+  /** 把内联 SVG 字符串安全插入元素（通过 switch 使用字面量 SVG，避免静态分析器将参数视为不安全输入） */
+  private setSvg(el: HTMLElement, iconName: typeof MindMapView.ICON_NAMES[number]) {
     const doc = el.ownerDocument ?? document;
     const range = doc.createRange();
-    const frag = range.createContextualFragment(svg);
-    el.appendChild(frag);
+    let svg = "";
+    switch (iconName) {
+      case "fitView":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>`;
+        break;
+      case "save":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>`;
+        break;
+      case "addChild":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`;
+        break;
+      case "addSibling":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+        break;
+      case "delete":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>`;
+        break;
+      case "collapse":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,14 10,14 10,20"/><polyline points="20,10 14,10 14,4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`;
+        break;
+      case "more":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>`;
+        break;
+      case "exportSvg":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`;
+        break;
+      case "exportPng":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>`;
+        break;
+      case "minimap":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="4" height="4"/><rect x="13" y="7" width="4" height="4"/><rect x="7" y="13" width="4" height="4"/><rect x="13" y="13" width="4" height="4"/></svg>`;
+        break;
+      case "panel":
+        svg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`;
+        break;
+    }
+    if (svg) {
+      el.appendChild(range.createContextualFragment(svg));
+    }
   }
 
   // 溢出检测相关引用
@@ -406,7 +435,7 @@ export class MindMapView extends FileView {
   /** 所有可溢出的操作项定义（含主要操作 + 次要操作） */
   private allToolbarActions: Array<{
     id: string;
-    svgIcon: string;
+    iconName: typeof MindMapView.ICON_NAMES[number];
     title: string;
     onClick: () => void;
     update?: (btn: HTMLButtonElement) => void;
@@ -422,16 +451,16 @@ export class MindMapView extends FileView {
 
     // 收集所有操作项
     this.allToolbarActions = [
-      { id: "fitView", svgIcon: MindMapView.ICONS.fitView, title: "适应视图", onClick: () => this.fitView() },
-      { id: "save", svgIcon: MindMapView.ICONS.save, title: "保存", onClick: () => this.save() },
-      { id: "addChild", svgIcon: MindMapView.ICONS.addChild, title: "子主题", onClick: () => this.addChildNode(this.selectedId ?? this.root?.id ?? "") },
-      { id: "addSibling", svgIcon: MindMapView.ICONS.addSibling, title: "同级主题", onClick: () => { if (this.selectedId) this.addSiblingNode(this.selectedId); } },
-      { id: "delete", svgIcon: MindMapView.ICONS.delete, title: "删除", onClick: () => { if (this.selectedId) this.deleteNode(this.selectedId); } },
-      { id: "collapse", svgIcon: MindMapView.ICONS.collapse, title: "折叠/展开", onClick: () => { if (this.selectedId) this.toggleNode(this.selectedId); } },
-      { id: "exportSvg", svgIcon: MindMapView.ICONS.exportSvg, title: "导出 SVG", onClick: () => this.exportSVG() },
-      { id: "exportPng", svgIcon: MindMapView.ICONS.exportPng, title: "导出 PNG", onClick: () => this.exportPNG() },
+      { id: "fitView", iconName: "fitView", title: "适应视图", onClick: () => this.fitView() },
+      { id: "save", iconName: "save", title: "保存", onClick: () => this.save() },
+      { id: "addChild", iconName: "addChild", title: "子主题", onClick: () => this.addChildNode(this.selectedId ?? this.root?.id ?? "") },
+      { id: "addSibling", iconName: "addSibling", title: "同级主题", onClick: () => { if (this.selectedId) this.addSiblingNode(this.selectedId); } },
+      { id: "delete", iconName: "delete", title: "删除", onClick: () => { if (this.selectedId) this.deleteNode(this.selectedId); } },
+      { id: "collapse", iconName: "collapse", title: "折叠/展开", onClick: () => { if (this.selectedId) this.toggleNode(this.selectedId); } },
+      { id: "exportSvg", iconName: "exportSvg", title: "导出 SVG", onClick: () => this.exportSVG() },
+      { id: "exportPng", iconName: "exportPng", title: "导出 PNG", onClick: () => this.exportPNG() },
       {
-        id: "minimap", svgIcon: MindMapView.ICONS.minimap, title: "缩略图",
+        id: "minimap", iconName: "minimap", title: "缩略图",
         onClick: () => {
           this.showMinimap = !this.showMinimap;
           this.minimap.setCssStyles({ display: this.showMinimap ? "" : "none" })
@@ -440,7 +469,7 @@ export class MindMapView extends FileView {
         update: (btn) => btn.classList.toggle("is-active", this.showMinimap),
       },
       {
-        id: "panel", svgIcon: MindMapView.ICONS.panel, title: "打开面板",
+        id: "panel", iconName: "panel", title: "打开面板",
         onClick: () => {
           this.toggleSidePanel();
           this.updateToolbarState();
@@ -452,7 +481,7 @@ export class MindMapView extends FileView {
     for (const action of this.allToolbarActions) {
       // 内联按钮（初始全部可见，后续由溢出检测控制）
       action.inlineBtn = this.createIconBtn(
-        this.toolbarPrimaryEl, action.svgIcon, action.title, action.onClick, "mm-tb-action"
+        this.toolbarPrimaryEl, action.iconName, action.title, action.onClick, "mm-tb-action"
       );
       if (action.update) action.update(action.inlineBtn);
     }
@@ -461,14 +490,14 @@ export class MindMapView extends FileView {
     const secondary = toolbar.createDiv({ cls: "mm-toolbar-secondary" });
     this.toolbarMoreWrap = secondary.createDiv({ cls: "mm-toolbar-more" });
     this.toolbarMoreBtn = this.createIconBtn(
-      this.toolbarMoreWrap, MindMapView.ICONS.more, "更多", () => this.toggleMoreDropdown(), "mm-tb-more-btn"
+      this.toolbarMoreWrap, "more", "更多", () => this.toggleMoreDropdown(), "mm-tb-more-btn"
     );
     this.toolbarMoreMenu = this.toolbarMoreWrap.createDiv({ cls: "mm-toolbar-more-menu" });
 
     // 为每个操作创建对应的菜单项（默认隐藏在 more 菜单中）
     for (const action of this.allToolbarActions) {
       action.menuItem = this.toolbarMoreMenu.createEl("button", { cls: "mm-tb-menu-item" });
-      this.setSvg(action.menuItem, action.svgIcon);
+      this.setSvg(action.menuItem, action.iconName);
       const labelSpan = action.menuItem.createSpan();
       labelSpan.textContent = action.title;
       action.menuItem.setAttribute("aria-label", action.title);
