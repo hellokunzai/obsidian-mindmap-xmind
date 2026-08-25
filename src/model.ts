@@ -1,6 +1,7 @@
 // 内部数据模型：直接复用 XMind 的 JSON 结构（Topic 树）。
 // 这样所有 XMind 自有字段（notes / markers / labels / href 等）都能原样保留，往返不丢数据。
 import { genId } from "./util";
+import { t } from "./i18n";
 
 export interface XChildren {
   attached?: XTopic[];
@@ -45,7 +46,7 @@ export function setAttached(t: XTopic, kids: XTopic[]): void {
   t.children.attached = kids;
 }
 
-export function addChild(parent: XTopic, title = "新主题"): XTopic {
+export function addChild(parent: XTopic, title = t("default.newTopic")): XTopic {
   const child = newTopic(title);
   const kids = attachedChildren(parent);
   kids.push(child);

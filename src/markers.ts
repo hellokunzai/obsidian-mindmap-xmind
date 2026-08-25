@@ -2,6 +2,9 @@
 // 对应 XMind 的 topic.markers 字段结构：{ markerId: "priority-1" }
 // 兼容 XMind 官方 marker id 命名；不存在时按 markerId 原样保留，不破坏文件。
 
+// 国际化：分类名与标记显示名通过 t() 获取（模块加载时语言环境已确定）
+import { t } from "./i18n";
+
 // 用局部别名 doc 引用 document，避免特定字面量触发社区市场自动检查
 const doc = document;
 
@@ -45,12 +48,12 @@ const PALETTE = [
 export const MARKER_CATEGORIES: MarkerCategoryDef[] = [
   {
     key: "label",
-    name: "标签",
+    name: t("marker.cat.label"),
     markers: PALETTE.map(
       (c, i) =>
         ({
           id: `label-${i + 1}`,
-          label: `标签 ${i + 1}`,
+          label: t("marker.labelTag", { n: String(i + 1) }),
           color: c,
           shape: "circle",
         }) as MarkerDef
@@ -58,7 +61,7 @@ export const MARKER_CATEGORIES: MarkerCategoryDef[] = [
   },
   {
     key: "priority",
-    name: "优先级",
+    name: t("marker.cat.priority"),
     markers: PALETTE.map(
       (c, i) =>
         ({
@@ -72,9 +75,9 @@ export const MARKER_CATEGORIES: MarkerCategoryDef[] = [
   },
   {
     key: "task",
-    name: "任务",
+    name: t("marker.cat.task"),
     markers: [
-      { id: "task-start", label: "开始", color: "#007aff", symbol: "▶" },
+      { id: "task-start", label: t("marker.taskStart"), color: "#007aff", symbol: "▶" },
       { id: "task-0", label: "0%", color: "#8e8e93", shape: "circle" },
       {
         id: "task-quarter",
@@ -97,18 +100,18 @@ export const MARKER_CATEGORIES: MarkerCategoryDef[] = [
         shape: "circle",
         progress: 0.75,
       },
-      { id: "task-done", label: "完成", color: "#34c759", symbol: "✓" },
-      { id: "task-paused", label: "暂停", color: "#ff9500", symbol: "‖" },
+      { id: "task-done", label: t("marker.taskDone"), color: "#34c759", symbol: "✓" },
+      { id: "task-paused", label: t("marker.taskPaused"), color: "#ff9500", symbol: "‖" },
     ],
   },
   {
     key: "flag",
-    name: "旗标",
+    name: t("marker.cat.flag"),
     markers: PALETTE.map(
       (c, i) =>
         ({
           id: `flag-${i + 1}`,
-          label: `旗标 ${i + 1}`,
+          label: t("marker.labelFlag", { n: String(i + 1) }),
           color: c,
           svgPath: "M0,0 L0,16 L6,11 L9,16 L9,5 L3,0 Z",
         }) as MarkerDef
@@ -116,12 +119,12 @@ export const MARKER_CATEGORIES: MarkerCategoryDef[] = [
   },
   {
     key: "star",
-    name: "星星",
+    name: t("marker.cat.star"),
     markers: PALETTE.map(
       (c, i) =>
         ({
           id: `star-${i + 1}`,
-          label: `${i + 1} 星`,
+          label: t("marker.starCount", { n: String(i + 1) }),
           color: c,
           svgPath:
             "M8,0 L10,5.5 L16,6 L11.5,10 L13,16 L8,12.5 L3,16 L4.5,10 L0,6 L6,5.5 Z",
@@ -130,12 +133,12 @@ export const MARKER_CATEGORIES: MarkerCategoryDef[] = [
   },
   {
     key: "person",
-    name: "人像",
+    name: t("marker.cat.person"),
     markers: PALETTE.map(
       (c, i) =>
         ({
           id: `people-${i + 1}`,
-          label: `人员 ${i + 1}`,
+          label: t("marker.personCount", { n: String(i + 1) }),
           color: c,
           svgPath:
             "M8,7 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 M2,16 c0,-3.3 2.7,-6 6,-6 s6,2.7 6,6",
@@ -144,15 +147,15 @@ export const MARKER_CATEGORIES: MarkerCategoryDef[] = [
   },
   {
     key: "symbol",
-    name: "符号",
+    name: t("marker.cat.symbol"),
     markers: [
-      { id: "symbol-red", label: "红", color: "#ff3b30", symbol: "♥" },
-      { id: "symbol-orange", label: "橙", color: "#ff9500", symbol: "☀" },
-      { id: "symbol-yellow", label: "黄", color: "#ffcc00", symbol: "☂" },
-      { id: "symbol-green", label: "绿", color: "#34c759", symbol: "♣" },
-      { id: "symbol-blue", label: "蓝", color: "#007aff", symbol: "♦" },
-      { id: "symbol-purple", label: "紫", color: "#af52de", symbol: "♠" },
-      { id: "symbol-gray", label: "灰", color: "#8e8e93", symbol: "♪" },
+      { id: "symbol-red", label: t("marker.color.red"), color: "#ff3b30", symbol: "♥" },
+      { id: "symbol-orange", label: t("marker.color.orange"), color: "#ff9500", symbol: "☀" },
+      { id: "symbol-yellow", label: t("marker.color.yellow"), color: "#ffcc00", symbol: "☂" },
+      { id: "symbol-green", label: t("marker.color.green"), color: "#34c759", symbol: "♣" },
+      { id: "symbol-blue", label: t("marker.color.blue"), color: "#007aff", symbol: "♦" },
+      { id: "symbol-purple", label: t("marker.color.purple"), color: "#af52de", symbol: "♠" },
+      { id: "symbol-gray", label: t("marker.color.gray"), color: "#8e8e93", symbol: "♪" },
     ],
   },
 ];
@@ -225,46 +228,60 @@ export function hasMarker(topic: unknown, id: string): boolean {
 export function renderMarkerIcon(def: MarkerDef, size = 14): HTMLElement {
   const wrap = doc.createElement("span");
   wrap.className = "mm-marker-icon";
-  wrap.setCssStyles({ width: size + "px" })
-  wrap.setCssStyles({ height: size + "px" })
+  wrap.setCssStyles({
+    width: size + "px",
+    height: size + "px",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+  });
   wrap.title = def.label;
 
   if (def.symbol) {
     wrap.textContent = def.symbol;
-    wrap.setCssStyles({ color: def.color })
-    wrap.setCssStyles({ fontSize: Math.round(size * 0.85) + "px" })
-    wrap.setCssStyles({ lineHeight: "1" })
-    wrap.setCssStyles({ display: "inline-flex" })
-    wrap.setCssStyles({ alignItems: "center" })
-    wrap.setCssStyles({ justifyContent: "center" })
-    wrap.setCssStyles({ fontWeight: "600" })
+    wrap.setCssStyles({
+      color: def.color,
+      fontSize: Math.round(size * 0.85) + "px",
+      lineHeight: "1",
+      fontWeight: "600",
+    });
   } else if (def.svgPath) {
     const NS = "http://www.w3.org/2000/svg";
     const svg = doc.createElementNS(NS, "svg");
+    svg.setAttribute("class", "mm-marker-svg");
     svg.setAttribute("viewBox", "0 0 16 16");
     svg.setAttribute("width", String(size));
     svg.setAttribute("height", String(size));
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     const path = doc.createElementNS(NS, "path");
     path.setAttribute("d", def.svgPath);
     path.setAttribute("fill", def.color);
     svg.appendChild(path);
     wrap.appendChild(svg);
   } else if (def.shape === "triangle") {
-    wrap.setCssStyles({ background: def.color })
-    wrap.setCssStyles({ clipPath: "polygon(50% 0, 100% 100%, 0 100%)" })
+    wrap.setCssStyles({
+      background: def.color,
+      clipPath: "polygon(50% 0, 100% 100%, 0 100%)",
+    });
   } else if (def.shape === "square") {
-    wrap.setCssStyles({ background: def.color })
-    wrap.setCssStyles({ borderRadius: "2px" })
+    wrap.setCssStyles({
+      background: def.color,
+      borderRadius: "2px",
+    });
   } else if (def.shape === "diamond") {
-    wrap.setCssStyles({ background: def.color })
-    wrap.setCssStyles({ transform: "rotate(45deg)" })
+    wrap.setCssStyles({
+      background: def.color,
+      transform: "rotate(45deg)",
+    });
   } else {
     // 默认：实心圆；如果是 task 进度，画进度环
     const NS = "http://www.w3.org/2000/svg";
     const svg = doc.createElementNS(NS, "svg");
+    svg.setAttribute("class", "mm-marker-svg");
     svg.setAttribute("viewBox", "0 0 16 16");
     svg.setAttribute("width", String(size));
     svg.setAttribute("height", String(size));
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     const bg = doc.createElementNS(NS, "circle");
     bg.setAttribute("cx", "8");
     bg.setAttribute("cy", "8");

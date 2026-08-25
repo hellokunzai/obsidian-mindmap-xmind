@@ -7,3 +7,8 @@ test-*.ts
 gen-*.cjs
 # 内部工具记忆目录（不与仓库同步）
 .workbuddy/
+# 公众号预览产物（不入仓库）
+article.preset.html
+wechat-preview-url.txt
+# git 仓库恢复备份（不入仓库）
+.git.recovery.bak/

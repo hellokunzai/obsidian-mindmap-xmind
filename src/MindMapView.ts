@@ -6,7 +6,6 @@ import {
   Notice,
   Platform,
   setIcon,
-  getIcon,
 } from "obsidian";
 import type { XSheet, XTopic } from "./model";
 import {
@@ -34,6 +33,8 @@ import {
 
 // 插件设置类型（类型导入，避免运行时循环依赖）
 import type { MindMapPluginSettings } from "./main";
+import { TOOLBAR_ICONS, type ToolbarIconKey } from "./icons";
+import { t } from "./i18n";
 
 // 主题配色方案
 export type ThemeKey = "classic" | "rainbow" | "pastel";
@@ -80,6 +81,7 @@ export function applyDefaultThemeToRoot(
 const NODE_W = 170;
 const MIN_NODE_W = 60; // 节点最小可拖拽宽度
 const MAX_NODE_W = 800; // 节点最大可拖拽宽度
+const TEXT_MAX_W = 360; // 节点文本自适应时的宽度上限，超过则换行而非无限变宽
 const NODE_H = 42;
 const NODE_H_COMPACT = 32;
 const H_GAP = 70; // 层级间水平间距
@@ -109,42 +111,42 @@ export const LAYOUTS: Record<
   { label: string; structureClass: string; thumb: string }
 > = {
   balance: {
-    label: "平衡图",
+    label: t("layout.balance"),
     structureClass: "org.xmind.ui.map.balance",
     thumb: "balance",
   },
   right: {
-    label: "向右图",
+    label: t("layout.right"),
     structureClass: "org.xmind.ui.map.right",
     thumb: "right",
   },
   left: {
-    label: "向左图",
+    label: t("layout.left"),
     structureClass: "org.xmind.ui.map.left",
     thumb: "left",
   },
   orgChart: {
-    label: "组织结构图",
+    label: t("layout.orgChart"),
     structureClass: "org.xmind.ui.orgChart.down",
     thumb: "orgChart",
   },
   tree: {
-    label: "树形图",
+    label: t("layout.tree"),
     structureClass: "org.xmind.ui.tree.right",
     thumb: "tree",
   },
   logic: {
-    label: "逻辑图",
+    label: t("layout.logic"),
     structureClass: "org.xmind.ui.logic.right",
     thumb: "logic",
   },
   timeline: {
-    label: "时间轴",
+    label: t("layout.timeline"),
     structureClass: "org.xmind.ui.timeline",
     thumb: "timeline",
   },
   fishbone: {
-    label: "鱼骨图",
+    label: t("layout.fishbone"),
     structureClass: "org.xmind.ui.fishbone.right",
     thumb: "fishbone",
   },
@@ -207,19 +209,19 @@ const NODE_PALETTE = [
 // 贴纸（emoji 图形库）
 const STICKER_GROUPS: { name: string; items: string[] }[] = [
   {
-    name: "工作",
+    name: t("sticker.work"),
     items: ["💡", "✅", "📌", "📅", "📊", "📧", "🔥", "⭐", "🎯", "🚀"],
   },
   {
-    name: "生活",
+    name: t("sticker.life"),
     items: ["❤️", "🏠", "🍎", "☕", "🎉", "🌈", "🌟", "💤", "🛒", "🐱"],
   },
   {
-    name: "自然",
+    name: t("sticker.nature"),
     items: ["🌞", "🌙", "🌳", "🌸", "🌊", "⚡", "❄️", "🌿", "🔥", "🍀"],
   },
   {
-    name: "符号",
+    name: t("sticker.symbol"),
     items: ["❗", "❓", "➕", "➖", "✔️", "✖️", "⚠️", "💬", "🔔", "📍"],
   },
 ];
@@ -359,48 +361,24 @@ export class MindMapView extends FileView {
     return VIEW_TYPE_MINDMAP;
   }
 
-  // ---------- 工具栏：图标（Obsidian 官方渲染：setIcon / getIcon） ----------
-  // 每个操作提供一组候选 lucide 图标名（按偏好排序）。运行时用 Obsidian 官方的
-  // getIcon() 选出一个确定存在的名称，再交给 setIcon() 渲染，保证图标一定显示、
-  // 不出现空灰框。候选名均取自 Obsidian 内置 lucide 图标集。
+  // ---------- 工具栏：图标 ----------
 
-  private static ICONS: Record<string, string[]> = {
-    fitView: ["maximize-2", "maximize"],
-    save: ["save"],
-    addChild: ["plus-circle", "plus"],
-    addSibling: ["plus"],
-    delete: ["trash-2", "trash"],
-    collapse: ["shrink", "minimize", "chevrons-down-up"],
-    more: ["more-horizontal", "dots-horizontal", "more-vertical"],
-    exportSvg: ["file-code-2", "file-code", "code-2", "code"],
-    exportPng: ["file-image", "image"],
-    minimap: ["layout-grid", "grid"],
-    panel: ["panel-right", "sidebar-right"],
-  };
-
-  /** 用 Obsidian 官方 getIcon() 选出一个确定存在的图标名；都不存在则回退到内置的 settings 图标。 */
-  private resolveIcon(candidates: string[]): string {
-    for (const name of candidates) {
-      if (getIcon(name)) return name;
-    }
-    return "settings";
-  }
-
-  /** 为按钮设置 Obsidian 内置 lucide 图标（官方 setIcon 渲染，自动套用主题色） */
-  private applyIcon(btn: HTMLElement, lucideName: string): void {
-    setIcon(btn, lucideName);
-  }
+  /** 所有工具栏图标名称（业务键，实际注册 ID 在 src/icons.ts 中） */
+  private static ICON_NAMES = [
+    "fitView", "save", "addChild", "addSibling", "delete", "collapse",
+    "more", "exportSvg", "exportPng", "minimap", "panel",
+  ] as const;
 
   /** 创建一个带图标的工具栏按钮 */
   private createIconBtn(
     parent: HTMLElement,
-    lucideName: string,
+    iconName: typeof MindMapView.ICON_NAMES[number],
     title: string,
     onClick: () => void,
     cls?: string
   ): HTMLButtonElement {
     const btn = parent.createEl("button", { cls });
-    this.applyIcon(btn, lucideName);
+    setIcon(btn, TOOLBAR_ICONS[iconName as ToolbarIconKey]);
     btn.setAttribute("aria-label", title);
     btn.addEventListener("click", onClick);
     return btn;
@@ -416,7 +394,7 @@ export class MindMapView extends FileView {
   /** 所有可溢出的操作项定义（含主要操作 + 次要操作） */
   private allToolbarActions: Array<{
     id: string;
-    lucideName: string;
+    iconName: typeof MindMapView.ICON_NAMES[number];
     title: string;
     onClick: () => void;
     update?: (btn: HTMLButtonElement) => void;
@@ -430,18 +408,18 @@ export class MindMapView extends FileView {
 
     this.toolbarPrimaryEl = toolbar.createDiv({ cls: "mm-toolbar-primary" });
 
-    // 收集所有操作项（图标名在运行时经 getIcon 解析为当前 Obsidian 确定存在的名称）
+    // 收集所有操作项
     this.allToolbarActions = [
-      { id: "fitView", lucideName: this.resolveIcon(MindMapView.ICONS.fitView), title: "适应视图", onClick: () => this.fitView() },
-      { id: "save", lucideName: this.resolveIcon(MindMapView.ICONS.save), title: "保存", onClick: () => this.save() },
-      { id: "addChild", lucideName: this.resolveIcon(MindMapView.ICONS.addChild), title: "子主题", onClick: () => this.addChildNode(this.selectedId ?? this.root?.id ?? "") },
-      { id: "addSibling", lucideName: this.resolveIcon(MindMapView.ICONS.addSibling), title: "同级主题", onClick: () => { if (this.selectedId) this.addSiblingNode(this.selectedId); } },
-      { id: "delete", lucideName: this.resolveIcon(MindMapView.ICONS.delete), title: "删除", onClick: () => { if (this.selectedId) this.deleteNode(this.selectedId); } },
-      { id: "collapse", lucideName: this.resolveIcon(MindMapView.ICONS.collapse), title: "折叠/展开", onClick: () => { if (this.selectedId) this.toggleNode(this.selectedId); } },
-      { id: "exportSvg", lucideName: this.resolveIcon(MindMapView.ICONS.exportSvg), title: "导出 SVG", onClick: () => this.exportSVG() },
-      { id: "exportPng", lucideName: this.resolveIcon(MindMapView.ICONS.exportPng), title: "导出 PNG", onClick: () => this.exportPNG() },
+      { id: "fitView", iconName: "fitView", title: t("toolbar.fitView"), onClick: () => this.fitView() },
+      { id: "save", iconName: "save", title: t("toolbar.save"), onClick: () => this.save() },
+      { id: "addChild", iconName: "addChild", title: t("toolbar.addChild"), onClick: () => this.addChildNode(this.selectedId ?? this.root?.id ?? "") },
+      { id: "addSibling", iconName: "addSibling", title: t("toolbar.addSibling"), onClick: () => { if (this.selectedId) this.addSiblingNode(this.selectedId); } },
+      { id: "delete", iconName: "delete", title: t("toolbar.delete"), onClick: () => { if (this.selectedId) this.deleteNode(this.selectedId); } },
+      { id: "collapse", iconName: "collapse", title: t("toolbar.collapse"), onClick: () => { if (this.selectedId) this.toggleNode(this.selectedId); } },
+      { id: "exportSvg", iconName: "exportSvg", title: t("toolbar.exportSvg"), onClick: () => this.exportSVG() },
+      { id: "exportPng", iconName: "exportPng", title: t("toolbar.exportPng"), onClick: () => this.exportPNG() },
       {
-        id: "minimap", lucideName: this.resolveIcon(MindMapView.ICONS.minimap), title: "缩略图",
+        id: "minimap", iconName: "minimap", title: t("toolbar.minimap"),
         onClick: () => {
           this.showMinimap = !this.showMinimap;
           this.minimap.setCssStyles({ display: this.showMinimap ? "" : "none" })
@@ -450,7 +428,7 @@ export class MindMapView extends FileView {
         update: (btn) => btn.classList.toggle("is-active", this.showMinimap),
       },
       {
-        id: "panel", lucideName: this.resolveIcon(MindMapView.ICONS.panel), title: "打开面板",
+        id: "panel", iconName: "panel", title: t("toolbar.panel"),
         onClick: () => {
           this.toggleSidePanel();
           this.updateToolbarState();
@@ -462,7 +440,7 @@ export class MindMapView extends FileView {
     for (const action of this.allToolbarActions) {
       // 内联按钮（初始全部可见，后续由溢出检测控制）
       action.inlineBtn = this.createIconBtn(
-        this.toolbarPrimaryEl, action.lucideName, action.title, action.onClick, "mm-tb-action"
+        this.toolbarPrimaryEl, action.iconName, action.title, action.onClick, "mm-tb-action"
       );
       if (action.update) action.update(action.inlineBtn);
     }
@@ -471,14 +449,14 @@ export class MindMapView extends FileView {
     const secondary = toolbar.createDiv({ cls: "mm-toolbar-secondary" });
     this.toolbarMoreWrap = secondary.createDiv({ cls: "mm-toolbar-more" });
     this.toolbarMoreBtn = this.createIconBtn(
-      this.toolbarMoreWrap, this.resolveIcon(MindMapView.ICONS.more), "更多", () => this.toggleMoreDropdown(), "mm-tb-more-btn"
+      this.toolbarMoreWrap, "more", t("toolbar.more"), () => this.toggleMoreDropdown(), "mm-tb-more-btn"
     );
     this.toolbarMoreMenu = this.toolbarMoreWrap.createDiv({ cls: "mm-toolbar-more-menu" });
 
     // 为每个操作创建对应的菜单项（默认隐藏在 more 菜单中）
     for (const action of this.allToolbarActions) {
       action.menuItem = this.toolbarMoreMenu.createEl("button", { cls: "mm-tb-menu-item" });
-      setIcon(action.menuItem, action.lucideName);
+      setIcon(action.menuItem!, TOOLBAR_ICONS[action.iconName as ToolbarIconKey]);
       const labelSpan = action.menuItem.createSpan();
       labelSpan.textContent = action.title;
       action.menuItem.setAttribute("aria-label", action.title);
@@ -503,7 +481,7 @@ export class MindMapView extends FileView {
     // 操作提示
     toolbar.createEl("span", {
       cls: "mm-hint",
-      text: "选中节点 · Tab 加子 / Enter 同级 / Delete 删除 / 空格 折叠 / 双击编辑",
+      text: t("toolbar.hint"),
     });
 
     // 启动溢出检测
@@ -615,12 +593,12 @@ export class MindMapView extends FileView {
   }
 
   getDisplayText(): string {
-    const name = this.file ? this.file.name : "思维导图";
+    const name = this.file ? this.file.name : t("view.fallbackTitle");
     return this.dirty ? `${name} •` : name;
   }
 
   getIcon(): string {
-    return "git-graph";
+    return "graph";
   }
 
   async onOpen() {
@@ -663,6 +641,11 @@ export class MindMapView extends FileView {
     this.svg.addEventListener("wheel", this.onWheel, { passive: false });
     this.svg.addEventListener("mousedown", this.onMouseDown);
     this.svg.addEventListener("touchstart", this.onTouchStart, { passive: false });
+    this.svg.addEventListener("contextmenu", (e: MouseEvent) => {
+      // 仅拦截背景（非节点）右键，避免弹出浏览器菜单；节点右键菜单由节点自身处理。
+      // 这样空白处右键拖拽即可平移画布而不会弹出系统菜单。
+      if (!(e.target as Element)?.closest?.(".mm-node")) e.preventDefault();
+    });
 
     // 右侧栏（移动端默认收起）
     this.sidePanel = main.createDiv({ cls: "mm-side-panel" });
@@ -675,10 +658,10 @@ export class MindMapView extends FileView {
     const tabs = this.sidePanel.createDiv({ cls: "mm-side-tabs" });
     const tabFormat = tabs.createDiv({
       cls: "mm-side-tab is-active",
-      text: "画布",
+      text: t("tab.format"),
     });
-    const tabMarkers = tabs.createDiv({ cls: "mm-side-tab", text: "标记" });
-    const tabStickers = tabs.createDiv({ cls: "mm-side-tab", text: "贴纸" });
+    const tabMarkers = tabs.createDiv({ cls: "mm-side-tab", text: t("tab.markers") });
+    const tabStickers = tabs.createDiv({ cls: "mm-side-tab", text: t("tab.stickers") });
     tabFormat.addEventListener("click", () => this.switchTab("format"));
     tabMarkers.addEventListener("click", () => this.switchTab("markers"));
     tabStickers.addEventListener("click", () => this.switchTab("stickers"));
@@ -839,7 +822,7 @@ export class MindMapView extends FileView {
       this.render();
       this.renderSidePanel();
     } catch (e) {
-      new Notice("无法解析思维导图：" + (e as Error).message);
+      new Notice(t("notice.parseFail", { msg: (e as Error).message }));
       this.renderEmpty();
     }
   }
@@ -847,25 +830,24 @@ export class MindMapView extends FileView {
   private renderEmpty() {
     while (this.g.firstChild) this.g.removeChild(this.g.firstChild);
     this.overlay.empty();
-    const t = svgEl("text", {
+    const txt = svgEl("text", {
       x: "20",
       y: "40",
       class: "mm-empty",
     }) as SVGTextElement;
-    t.textContent =
-      "没有打开的思维导图文件。使用命令「新建思维导图 (.xmind)」开始。";
-    this.g.appendChild(t);
+    txt.textContent = t("view.empty");
+    this.g.appendChild(txt);
   }
 
   // ---------- 布局算法 ----------
 
   private nodeHeight(t: XTopic): number {
     const kids = t.collapsed ? [] : attachedChildren(t);
-    if (kids.length === 0) return this.nh;
+    if (kids.length === 0) return this.nodeRealHeight(t);
     let h = 0;
     for (const k of kids) h += this.nodeHeight(k) + this.vgap;
     h -= this.vgap;
-    return Math.max(this.nh, h);
+    return Math.max(this.nodeRealHeight(t), h);
   }
 
   private subtreeHeight(kids: XTopic[]): number {
@@ -919,7 +901,52 @@ export class MindMapView extends FileView {
     return this.canvasStyle.compact ? 10 : 11;
   }
 
-  // 节点的实际宽度：优先用用户拖拽设定的 _width，否则按深度回退到层级默认盒宽
+  // 判断字符是否为「宽字符」（CJK / 全角等）。宽字符近似占 1em，其余约 0.55em。
+  private isWideChar(ch: string): boolean {
+    const c = ch.codePointAt(0) ?? 0;
+    return (
+      (c >= 0x1100 && c <= 0x115f) || // Hangul Jamo
+      (c >= 0x2e80 && c <= 0x303e) || // CJK 部首 / 符号
+      (c >= 0x3041 && c <= 0x33ff) || // 平假名 / 片假名 / CJK 符号
+      (c >= 0x3400 && c <= 0x4dbf) || // CJK 扩展 A
+      (c >= 0x4e00 && c <= 0x9fff) || // CJK 基本区
+      (c >= 0xa000 && c <= 0xa4cf) || // 彝文
+      (c >= 0xac00 && c <= 0xd7a3) || // Hangul 音节
+      (c >= 0xf900 && c <= 0xfaff) || // CJK 兼容
+      (c >= 0xfe30 && c <= 0xfe4f) || // CJK 兼容形式
+      (c >= 0xff00 && c <= 0xff60) || // 全角形式
+      (c >= 0xffe0 && c <= 0xffe6) ||
+      (c >= 0x20000 && c <= 0x3fffd) // CJK 扩展 B+
+    );
+  }
+
+  // 估算一段文本在给定字号下的视觉宽度（px）
+  private textVisualWidth(title: string, fontSize: number): number {
+    let w = 0;
+    for (const ch of title) w += this.isWideChar(ch) ? fontSize : fontSize * 0.55;
+    return w;
+  }
+
+  // 节点实际高度：随文本内容自适应（换行时增高），最低不低于层级默认盒高；
+  // 同时计入贴纸 / 标记行的额外高度。布局与渲染均以此为准，避免文字被裁切或节点重叠。
+  private nodeRealHeight(n: XTopic): number {
+    const depth = this.depthOf(n);
+    const base = this.boxHeightOf(depth);
+    const title = n.title ?? "";
+    if (!title) return base;
+    const fs = this.fontSizeOf(depth);
+    const w = Math.max(1, this.nodeWidth(n) - 16); // 文字可用宽度（左右各 8px padding）
+    const textW = this.textVisualWidth(title, fs);
+    const lines = Math.max(1, Math.ceil(textW / w));
+    const lineH = fs * 1.25;
+    let h = lines * lineH + 8; // 上下 padding
+    if (getStickers(n).length) h += 18;
+    if (getMarkerIds(n).length) h += 16;
+    return Math.round(Math.max(base, h + 4)); // +4 冗余，防止估算误差裁掉下行
+  }
+
+  // 节点的实际宽度：优先用用户拖拽设定的 _width；否则按深度回退到层级默认盒宽，
+  // 并随文本长度自适应变宽（不超过 TEXT_MAX_W），保证文字完整可见。
   private nodeWidth(n: XTopic): number {
     const w = (n as { _width?: unknown })._width;
     const num =
@@ -929,12 +956,16 @@ export class MindMapView extends FileView {
         ? parseFloat(w)
         : NaN;
     if (isFinite(num) && num >= MIN_NODE_W) return num;
-    return this.boxWidthOf(this.depthOf(n));
+    const depth = this.depthOf(n);
+    const base = this.boxWidthOf(depth);
+    const fs = this.fontSizeOf(depth);
+    const needed = this.textVisualWidth(n.title ?? "", fs) + 16; // 左右 padding
+    return Math.round(Math.min(TEXT_MAX_W, Math.max(base, needed)));
   }
 
-  // 节点盒子（单格）渲染高度，按层级深度缩放
+  // 节点盒子（单格）渲染高度，按内容自适应（供渲染 / 输入框使用）
   private nodeBoxHeight(n: XTopic): number {
-    return this.boxHeightOf(this.depthOf(n));
+    return this.nodeRealHeight(n);
   }
 
   private place(node: XTopic, x: number, top: number, side: number) {
@@ -1083,14 +1114,14 @@ export class MindMapView extends FileView {
     };
     const placeOrg = (n: XTopic, cx: number, topY: number) => {
       const kids = n.collapsed ? [] : attachedChildren(n);
-      const cy = topY + this.nh / 2;
+      const cy = topY + this.nodeBoxHeight(n) / 2;
       if (n.id) this.positions.set(n.id, { x: cx, y: cy, side: 0 });
       if (kids.length === 0) return;
       let totalW = 0;
       for (const k of kids) totalW += subtreeWidth(k) + ORG_H_GAP;
       totalW -= ORG_H_GAP;
       let curX = cx - totalW / 2;
-      const childTopY = cy + this.nh / 2 + this.orgVgap;
+      const childTopY = cy + this.nodeBoxHeight(n) / 2 + this.orgVgap;
       for (const k of kids) {
         const w = subtreeWidth(k);
         const childCx = curX + w / 2;
@@ -1171,10 +1202,10 @@ export class MindMapView extends FileView {
       if (k.id) this.positions.set(k.id, { x: kx, y: 0, side: 1 });
       cursor += kw + this.hgap;
       const sub = k.collapsed ? [] : attachedChildren(k);
-      let subY = this.nh + this.vgap;
+      let subY = this.nodeBoxHeight(k) + this.vgap;
       for (const s of sub) {
         if (s.id) this.positions.set(s.id, { x: kx, y: subY, side: 2 });
-        subY += this.nh + this.vgap;
+        subY += this.nodeBoxHeight(s) + this.vgap;
       }
     }
   }
@@ -1217,10 +1248,11 @@ export class MindMapView extends FileView {
     for (const [id, p] of this.positions) {
       const node = this.root ? findTopic(this.root, id) : null;
       const wHalf = (node ? this.nodeWidth(node) : this.nw) / 2;
+      const hHalf = (node ? this.nodeBoxHeight(node) : this.nh) / 2;
       minX = Math.min(minX, p.x - wHalf);
       maxX = Math.max(maxX, p.x + wHalf);
-      minY = Math.min(minY, p.y - this.nh / 2);
-      maxY = Math.max(maxY, p.y + this.nh / 2);
+      minY = Math.min(minY, p.y - hHalf);
+      maxY = Math.max(maxY, p.y + hHalf);
     }
     const w = Math.max(1, maxX - minX);
     const h = Math.max(1, maxY - minY);
@@ -1293,7 +1325,7 @@ export class MindMapView extends FileView {
         if (!cp) return;
         const color = this.edgeColor(node, i);
         const path = svgEl("path", {
-          d: edgePath(pos, cp, this.nodeWidth(node), this.nodeWidth(k), this.nh, this.currentLayout),
+          d: edgePath(pos, cp, this.nodeWidth(node), this.nodeWidth(k), this.nodeBoxHeight(node), this.nodeBoxHeight(k), this.currentLayout),
           class: "mm-edge",
         });
         // 用内联 style 覆盖 styles.css 里的 .mm-edge{stroke:...}：SVG presentation attribute
@@ -1406,14 +1438,14 @@ export class MindMapView extends FileView {
 
     const text = newEl("div");
     text.className = "mm-node-text";
-    text.textContent = node.title ?? "(空)";
+    text.textContent = node.title ?? t("default.emptyText");
     div.appendChild(text);
 
     // 拖拽调整宽度的手柄（放在远离父节点的一侧）
     const handleSide: "left" | "right" = pos.side < 0 ? "left" : "right";
     const handle = newEl("div");
     handle.className = "mm-resize-handle " + handleSide;
-    handle.title = "拖拽调整节点宽度";
+    handle.title = t("node.resizeHint");
     handle.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -1605,22 +1637,22 @@ export class MindMapView extends FileView {
     if (!node) return;
     const menu = new Menu();
     menu.addItem((i) =>
-      i.setTitle("添加子主题").onClick(() => this.addChildNode(id))
+      i.setTitle(t("ctx.addChild")).onClick(() => this.addChildNode(id))
     );
     menu.addItem((i) =>
-      i.setTitle("添加同级主题").onClick(() => this.addSiblingNode(id))
+      i.setTitle(t("ctx.addSibling")).onClick(() => this.addSiblingNode(id))
     );
     menu.addItem((i) =>
-      i.setTitle("编辑文本").onClick(() => this.startEdit(id))
+      i.setTitle(t("ctx.editText")).onClick(() => this.startEdit(id))
     );
     menu.addItem((i) =>
       i
-        .setTitle(node.collapsed ? "展开" : "折叠")
+        .setTitle(node.collapsed ? t("ctx.expand") : t("ctx.collapse"))
         .onClick(() => this.toggleNode(id))
     );
-    menu.addItem((i) => i.setTitle("删除").onClick(() => this.deleteNode(id)));
+    menu.addItem((i) => i.setTitle(t("ctx.delete")).onClick(() => this.deleteNode(id)));
     menu.addItem((i) =>
-      i.setTitle("重置宽度").onClick(() => {
+      i.setTitle(t("ctx.resetWidth")).onClick(() => {
         delete (node as { _width?: number })._width;
         this.rebuild();
       })
@@ -1632,7 +1664,7 @@ export class MindMapView extends FileView {
     if (!this.root) return;
     const parent = findTopic(this.root, id);
     if (!parent) return;
-    const child = addChild(parent, "新主题");
+    const child = addChild(parent);
     if (parent === this.root && this.canvasStyle.theme === "pastel") {
       const idx = attachedChildren(this.root).indexOf(child);
       (child as { _color?: string })._color =
@@ -1645,12 +1677,12 @@ export class MindMapView extends FileView {
   private addSiblingNode(id: string) {
     if (!this.root) return;
     if (id === this.root.id) {
-      new Notice("根主题没有同级主题");
+      new Notice(t("notice.rootNoSibling"));
       return;
     }
     const parent = findParent(this.root, id);
     if (!parent) return;
-    const child = addChild(parent, "新主题");
+    const child = addChild(parent);
     if (parent === this.root && this.canvasStyle.theme === "pastel") {
       const idx = attachedChildren(this.root).indexOf(child);
       (child as { _color?: string })._color =
@@ -1662,7 +1694,7 @@ export class MindMapView extends FileView {
   private deleteNode(id: string) {
     if (!this.root) return;
     if (id === this.root.id) {
-      new Notice("不能删除根主题");
+      new Notice(t("notice.cannotDeleteRoot"));
       return;
     }
     removeTopic(this.root, id);
@@ -1680,6 +1712,8 @@ export class MindMapView extends FileView {
 
   private rebuildAndSelect(id: string) {
     this.rebuild();
+    // 新增节点后，若其落在当前视口之外，仅平移（不缩放）将其带入可见区域
+    this.revealNode(id);
     this.select(id);
     this.startEdit(id);
   }
@@ -1689,10 +1723,39 @@ export class MindMapView extends FileView {
     this.render();
     this.dirty = true;
     this.refreshHeader();
-    // 折叠/展开/增删等节点变更后重新自适应视图，
-    // 避免节点位置已变但视图仍以旧的 tx/ty/scale 显示导致重叠/错位
-    this.fitView();
+    // 注意：此处不再调用 fitView()。折叠/展开/增删/改色/改标记等节点变更应保持用户当前的
+    // 缩放与平移，否则放大后做任何操作画布都会被重置回「适应视图」大小（见 issue #2）。
+    // 仅初次加载（applyDefaultView）、布局切换（setLayout）、全屏切换、工具栏「适应视图」
+    // 以及新增节点（rebuildAndSelect 内按需 revealNode）才会调整视图。
     this.maybeAutoSave();
+  }
+
+  /**
+   * 将指定节点平移进当前视口（仅在它当前完全不可见时）；
+   * 保持缩放比例不变，仅调整 tx/ty，避免「放大后操作就重置画布」的问题。
+   */
+  private revealNode(id: string) {
+    if (!this.root) return;
+    const node = findTopic(this.root, id);
+    const pos = this.positions.get(id);
+    if (!node || !pos) return;
+    const rect = this.svg.getBoundingClientRect();
+    const cw = rect.width || 800;
+    const ch = rect.height || 600;
+    const sx = this.tx + pos.x * this.scale;
+    const sy = this.ty + pos.y * this.scale;
+    const w = this.nodeWidth(node) * this.scale;
+    const h = this.nodeBoxHeight(node) * this.scale;
+    const margin = 24;
+    const onScreen =
+      sx - w / 2 > margin &&
+      sx + w / 2 < cw - margin &&
+      sy - h / 2 > margin &&
+      sy + h / 2 < ch - margin;
+    if (onScreen) return;
+    this.tx = cw / 2 - pos.x * this.scale;
+    this.ty = ch / 2 - pos.y * this.scale;
+    this.applyTransform();
   }
 
   private setLayout(key: LayoutKey) {
@@ -1700,7 +1763,9 @@ export class MindMapView extends FileView {
     this.currentLayout = key;
     (this.root as unknown as Record<string, unknown>)["structure-class"] =
       LAYOUTS[key].structureClass;
+    // 切换布局是结构性大改，重新自适应视图是合理的
     this.rebuild();
+    this.fitView();
     this.renderSidePanel();
   }
 
@@ -1739,7 +1804,7 @@ export class MindMapView extends FileView {
     // 同步把主题设为 pastel，后续新增根子节点也会自动继承色板
     this.canvasStyle.theme = "pastel";
     writeCanvasStyle(this.root, this.canvasStyle);
-    new Notice("已按分支自动染色（" + kids.length + " 个分支）");
+    new Notice(t("notice.autoColored", { count: String(kids.length) }));
     this.rebuild();
     this.renderSidePanel();
   }
@@ -1780,7 +1845,7 @@ export class MindMapView extends FileView {
     input.className = "mm-edit-input";
     input.value = node.title ?? "";
     const editDepth = this.depthOf(node);
-    const editBoxH = this.boxHeightOf(editDepth);
+    const editBoxH = this.nodeBoxHeight(node);
     input.setCssStyles({ left: this.tx + (pos.x - this.nodeWidth(node) / 2) * this.scale + "px" })
     input.setCssStyles({ top: this.ty + (pos.y - editBoxH / 2) * this.scale + "px" })
     input.setCssStyles({ width: this.nodeWidth(node) * this.scale + "px" })
@@ -1933,16 +1998,12 @@ export class MindMapView extends FileView {
 
   // ---------- 平移 / 缩放 ----------
 
-  // 命中判定：target 是根节点 div 自身或它的子元素
-  private isTargetOnRoot(target: Element | null): boolean {
-    if (!target || !this.root) return false;
-    const rootEl = this.nodeEls.get(this.root.id);
-    return !!rootEl && (rootEl === target || rootEl.contains(target));
-  }
-
   private onMouseDown = (e: MouseEvent) => {
-    // 只允许在根节点（中心主题）上拖动整张导图；空白处与连线不再平移画布
-    if (!this.isTargetOnRoot(e.target as Element | null)) return;
+    // 在节点（及其子元素，如贴纸/标记/手柄）上按下由 startDrag 处理拖拽；
+    // 空白处（背景 / 连线）按下左键或右键则平移整张画布。
+    const tEl = e.target as Element | null;
+    if (tEl && tEl.closest(".mm-node")) return;
+    if (e.button !== 0 && e.button !== 2) return;
     e.preventDefault();
     const startX = e.clientX;
     const startY = e.clientY;
@@ -1963,8 +2024,8 @@ export class MindMapView extends FileView {
 
   private onTouchStart = (e: TouchEvent) => {
     if (e.touches.length === 1) {
-      // 只允许在根节点上拖动整张导图；空白处不再平移画布
-      if (!this.isTargetOnRoot(e.target as Element | null)) return;
+      // 单指：在节点上由其自身 pointerdown 处理拖拽；空白处（非节点）则平移整张画布
+      if ((e.target as Element)?.closest?.(".mm-node")) return;
       e.preventDefault();
       const touch = e.touches[0];
       const startX = touch.clientX;
@@ -2194,7 +2255,7 @@ export class MindMapView extends FileView {
   private exportSVG() {
     const svg = this.buildExportSVG();
     if (!svg) {
-      new Notice("没有可导出的内容");
+      new Notice(t("notice.noExportContent"));
       return;
     }
     this.writeExportFile(svg, "svg");
@@ -2203,7 +2264,7 @@ export class MindMapView extends FileView {
   private async exportPNG() {
     const svg = this.buildExportSVG();
     if (!svg) {
-      new Notice("没有可导出的内容");
+      new Notice(t("notice.noExportContent"));
       return;
     }
     const b = this.mapBounds();
@@ -2220,7 +2281,7 @@ export class MindMapView extends FileView {
       canvas.height = h * scale;
       const ctx = canvas.getContext("2d");
       if (!ctx) {
-        new Notice("PNG 导出失败：无法创建画布");
+        new Notice(t("notice.pngFailCanvas"));
         URL.revokeObjectURL(url);
         return;
       }
@@ -2228,7 +2289,7 @@ export class MindMapView extends FileView {
       ctx.drawImage(img, 0, 0);
       canvas.toBlob((out) => {
         if (!out) {
-          new Notice("PNG 导出失败");
+          new Notice(t("notice.pngFail"));
           URL.revokeObjectURL(url);
           return;
         }
@@ -2239,7 +2300,7 @@ export class MindMapView extends FileView {
       }, "image/png");
     };
     img.onerror = () => {
-      new Notice("PNG 导出失败");
+      new Notice(t("notice.pngFail"));
       URL.revokeObjectURL(url);
     };
     img.src = url;
@@ -2271,7 +2332,7 @@ export class MindMapView extends FileView {
         if (!cp) return;
         const color = this.edgeColor(node, i) || "#b0b8c4";
         parts.push(
-          `<path d="${edgePath(pos, cp, this.nodeWidth(node), this.nodeWidth(k), this.nh, this.currentLayout)}" fill="none" stroke="${color}" stroke-width="2"/>`
+          `<path d="${edgePath(pos, cp, this.nodeWidth(node), this.nodeWidth(k), this.nodeBoxHeight(node), this.nodeBoxHeight(k), this.currentLayout)}" fill="none" stroke="${color}" stroke-width="2"/>`
         );
       });
     }
@@ -2336,7 +2397,7 @@ export class MindMapView extends FileView {
 
   private async writeExportFile(data: string | ArrayBuffer, ext: "svg" | "png") {
     if (!this.file) {
-      new Notice("没有打开的文件");
+      new Notice(t("notice.noOpenFile"));
       return;
     }
     const base = this.file.path.replace(/\.xmind$/i, "");
@@ -2349,9 +2410,9 @@ export class MindMapView extends FileView {
     try {
       if (ext === "svg") await this.app.vault.create(path, data as string);
       else await this.app.vault.createBinary(path, data as ArrayBuffer);
-      new Notice("已导出 " + path);
+      new Notice(t("notice.exported", { path }));
     } catch (e) {
-      new Notice("导出失败：" + (e as Error).message);
+      new Notice(t("notice.exportFail", { msg: (e as Error).message }));
     }
   }
 
@@ -2374,7 +2435,7 @@ export class MindMapView extends FileView {
     // 思维导图布局缩略图
     const section1 = content.createDiv({ cls: "mm-side-section" });
     const title1 = section1.createDiv({ cls: "mm-side-section-title" });
-    title1.createEl("span", { text: "思维导图" });
+    title1.createEl("span", { text: t("side.section.mindmap") });
     const thumbs = section1.createDiv({ cls: "mm-thumbs-grid" });
     for (const key of LAYOUT_ORDER) {
       const def = LAYOUTS[key];
@@ -2390,20 +2451,20 @@ export class MindMapView extends FileView {
     // 画布样式开关
     const section2 = content.createDiv({ cls: "mm-side-section" });
     const title2 = section2.createDiv({ cls: "mm-side-section-title" });
-    title2.createEl("span", { text: "画布样式" });
+    title2.createEl("span", { text: t("side.section.canvasStyle") });
 
-    this.makeToggleRow(section2, "彩虹分支", this.canvasStyle.rainbow, (v) =>
+    this.makeToggleRow(section2, t("side.canvas.rainbow"), this.canvasStyle.rainbow, (v) =>
       this.updateCanvasStyle({ rainbow: v })
     );
     this.makeToggleRow(
       section2,
-      "紧凑布局",
+      t("side.canvas.compact"),
       this.canvasStyle.compact,
       (v) => this.updateCanvasStyle({ compact: v })
     );
     this.makeToggleRow(
       section2,
-      "全屏显示",
+      t("side.canvas.fullscreen"),
       this.canvasStyle.fullscreen,
       (v) => this.updateCanvasStyle({ fullscreen: v })
     );
@@ -2413,10 +2474,10 @@ export class MindMapView extends FileView {
       const node = findTopic(this.root, this.selectedId);
       const section3 = content.createDiv({ cls: "mm-side-section" });
       const title3 = section3.createDiv({ cls: "mm-side-section-title" });
-      title3.createEl("span", { text: "节点样式" });
+      title3.createEl("span", { text: t("side.section.nodeStyle") });
       if (node) {
         const nameRow = section3.createDiv({ cls: "mm-node-style-name" });
-        nameRow.textContent = "当前：" + (node.title || "(空)");
+        nameRow.textContent = t("side.node.current", { name: node.title || t("default.emptyText") });
         // 预设色板
         const swatches = section3.createDiv({ cls: "mm-swatches" });
         for (const c of NODE_PALETTE) {
@@ -2435,22 +2496,22 @@ export class MindMapView extends FileView {
         );
         pickerRow.createEl("span", {
           cls: "mm-picker-label",
-          text: "自定义颜色",
+          text: t("side.node.customColor"),
         });
         // 按钮
         const btnClear = section3.createEl("button", {
           cls: "mm-style-btn",
-          text: "清除此节点颜色",
+          text: t("side.node.clearColor"),
         });
         btnClear.addEventListener("click", () => this.setNodeColor(null));
         const btnAuto = section3.createEl("button", {
           cls: "mm-style-btn",
-          text: "按分支自动染色",
+          text: t("side.node.autoColor"),
         });
         btnAuto.addEventListener("click", () => this.autoColorBranches());
         const btnClearAll = section3.createEl("button", {
           cls: "mm-style-btn",
-          text: "清除所有节点颜色",
+          text: t("side.node.clearAllColors"),
         });
         btnClearAll.addEventListener("click", () => this.clearAllColors());
       }
@@ -2461,13 +2522,13 @@ export class MindMapView extends FileView {
       const stats = this.collectStats();
       const section4 = content.createDiv({ cls: "mm-side-section" });
       const title4 = section4.createDiv({ cls: "mm-side-section-title" });
-      title4.createEl("span", { text: "信息" });
+      title4.createEl("span", { text: t("side.section.info") });
       const info = section4.createDiv({ cls: "mm-info" });
-      info.createEl("div", { text: `主题数：${stats.topicCount}` });
-      info.createEl("div", { text: `最大深度：${stats.maxDepth}` });
-      info.createEl("div", { text: `带标记的节点：${stats.markedCount}` });
-      info.createEl("div", { text: `带贴纸的节点：${stats.stickerCount}` });
-      info.createEl("div", { text: `带颜色的节点：${stats.coloredCount}` });
+      info.createEl("div", { text: t("side.stats.topics", { count: String(stats.topicCount) }) });
+      info.createEl("div", { text: t("side.stats.maxDepth", { depth: String(stats.maxDepth) }) });
+      info.createEl("div", { text: t("side.stats.marked", { count: String(stats.markedCount) }) });
+      info.createEl("div", { text: t("side.stats.stickers", { count: String(stats.stickerCount) }) });
+      info.createEl("div", { text: t("side.stats.colored", { count: String(stats.coloredCount) }) });
     }
   }
 
@@ -2492,7 +2553,7 @@ export class MindMapView extends FileView {
 
     if (!this.selectedId) {
       const hint = content.createDiv({ cls: "mm-marker-empty" });
-      hint.textContent = "选中一个节点后，点击下方标记即可给该节点添加或移除标记。";
+      hint.textContent = t("side.marker.emptyHint");
       return;
     }
     const node = findTopic(this.root!, this.selectedId);
@@ -2501,15 +2562,15 @@ export class MindMapView extends FileView {
     const header = content.createDiv({ cls: "mm-marker-header" });
     header.createEl("div", {
       cls: "mm-marker-header-title",
-      text: "当前节点",
+      text: t("side.currentNode"),
     });
     header.createEl("div", {
       cls: "mm-marker-header-name",
-      text: node.title || "(空)",
+      text: node.title || t("default.emptyText"),
     });
     const clearBtn = header.createEl("button", {
       cls: "mm-marker-clear",
-      text: "清除全部",
+      text: t("side.clearAll"),
     });
     clearBtn.addEventListener("click", () => {
       if (!node) return;
@@ -2551,7 +2612,7 @@ export class MindMapView extends FileView {
     const content = this.sideContent;
     if (!this.selectedId) {
       const hint = content.createDiv({ cls: "mm-marker-empty" });
-      hint.textContent = "选中一个节点后，点击下方贴纸即可给该节点添加或移除贴纸。";
+      hint.textContent = t("side.sticker.emptyHint");
       return;
     }
     const node = findTopic(this.root!, this.selectedId);
@@ -2560,15 +2621,15 @@ export class MindMapView extends FileView {
     const header = content.createDiv({ cls: "mm-marker-header" });
     header.createEl("div", {
       cls: "mm-marker-header-title",
-      text: "当前节点",
+      text: t("side.currentNode"),
     });
     header.createEl("div", {
       cls: "mm-marker-header-name",
-      text: node.title || "(空)",
+      text: node.title || t("default.emptyText"),
     });
     const clearBtn = header.createEl("button", {
       cls: "mm-marker-clear",
-      text: "清除全部",
+      text: t("side.clearAll"),
     });
     clearBtn.addEventListener("click", () => {
       setStickers(node, []);
@@ -2653,9 +2714,9 @@ export class MindMapView extends FileView {
       await this.app.vault.modifyBinary(this.file, data);
       this.dirty = false;
       this.refreshHeader();
-      new Notice("思维导图已保存");
+      new Notice(t("notice.saved"));
     } catch (e) {
-      new Notice("保存失败：" + (e as Error).message);
+      new Notice(t("notice.saveFail", { msg: (e as Error).message }));
     }
   }
 }
@@ -2794,7 +2855,8 @@ function edgePath(
   c: Pos,
   wP: number,
   wC: number,
-  nh: number,
+  hP: number,
+  hC: number,
   layout: LayoutKey
 ): string {
   // 鱼骨对角线
@@ -2805,12 +2867,12 @@ function edgePath(
     const y2 = c.y;
     return `M ${x1} ${y1} L ${x2} ${y2}`;
   }
-  // 时间轴子级：垂直折线
+  // 时间轴子级：垂直折线（hP/hC 为父/子节点真实高度）
   if (c.side === 2) {
     const x1 = p.x;
-    const y1 = p.y + nh / 2;
+    const y1 = p.y + hP / 2;
     const x2 = c.x;
-    const y2 = c.y - nh / 2;
+    const y2 = c.y - hC / 2;
     const mx = (x1 + x2) / 2;
     return `M ${x1} ${y1} L ${mx} ${y1} L ${mx} ${y2} L ${x2} ${y2}`;
   }
@@ -2823,12 +2885,12 @@ function edgePath(
     const mx = (x1 + x2) / 2;
     return `M ${x1} ${y1} L ${mx} ${y1} L ${mx} ${y2} L ${x2} ${y2}`;
   }
-  // 组织结构图：父和子都 side=0，走直角折线
+  // 组织结构图：父和子都 side=0，走直角折线（hP/hC 为父/子节点真实高度）
   if (p.side === 0 && c.side === 0) {
     const x1 = p.x;
-    const y1 = p.y + nh / 2;
+    const y1 = p.y + hP / 2;
     const x2 = c.x;
-    const y2 = c.y - nh / 2;
+    const y2 = c.y - hC / 2;
     const midY = (y1 + y2) / 2;
     return `M ${x1} ${y1} L ${x1} ${midY} L ${x2} ${midY} L ${x2} ${y2}`;
   }

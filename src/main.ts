@@ -10,6 +10,7 @@ import {
   ToggleComponent,
   SliderComponent,
   ExtraButtonComponent,
+  addIcon,
 } from "obsidian";
 import {
   MindMapView,
@@ -23,6 +24,8 @@ import type { LayoutKey, ThemeKey } from "./MindMapView";
 import { serializeXMind } from "./xmind";
 import { genId } from "./util";
 import type { XSheet, XTopic } from "./model";
+import { registerToolbarIcons } from "./icons";
+import { t } from "./i18n";
 
 // 插件设置接口
 export interface MindMapPluginSettings {
@@ -60,12 +63,12 @@ class MindMapSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl)
-      .setName("常规")
+      .setName(t("settings.general"))
       .setHeading();
 
     new Setting(containerEl)
-      .setName("自动保存")
-      .setDesc("编辑思维导图时自动保存更改，无需手动点击保存按钮")
+      .setName(t("settings.autoSave.name"))
+      .setDesc(t("settings.autoSave.desc"))
       .addToggle((toggle: ToggleComponent) => {
         toggle
           .setValue(this.plugin.settings.autoSave)
@@ -76,8 +79,8 @@ class MindMapSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("自动保存间隔")
-      .setDesc("自动保存的时间间隔（秒）")
+      .setName(t("settings.autoSaveInterval.name"))
+      .setDesc(t("settings.autoSaveInterval.desc"))
       .addSlider((slider: SliderComponent) => slider
         .setLimits(10, 300, 10)
         .setValue(this.plugin.settings.autoSaveInterval)
@@ -89,7 +92,7 @@ class MindMapSettingTab extends PluginSettingTab {
       )
       .addExtraButton((btn: ExtraButtonComponent) => btn
         .setIcon("reset")
-        .setTooltip("恢复默认值 (30秒)")
+        .setTooltip(t("settings.resetInterval", { seconds: String(DEFAULT_SETTINGS.autoSaveInterval) }))
         .onClick(async () => {
           this.plugin.settings.autoSaveInterval = DEFAULT_SETTINGS.autoSaveInterval;
           await this.plugin.saveSettings();
@@ -98,13 +101,13 @@ class MindMapSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("外观与默认")
+      .setName(t("settings.appearance"))
       .setHeading();
 
     // 默认布局
     new Setting(containerEl)
-      .setName("默认布局")
-      .setDesc("新建思维导图时使用的默认布局")
+      .setName(t("settings.defaultLayout.name"))
+      .setDesc(t("settings.defaultLayout.desc"))
       .addDropdown((dd) => {
         for (const key of LAYOUT_ORDER) {
           dd.addOption(key, LAYOUTS[key].label);
@@ -118,8 +121,8 @@ class MindMapSettingTab extends PluginSettingTab {
 
     // 紧凑模式
     new Setting(containerEl)
-      .setName("紧凑模式")
-      .setDesc("新建导图默认使用紧凑布局（间距更小，可显示更多内容）。已有文件以自身设置为准。")
+      .setName(t("settings.compactMode.name"))
+      .setDesc(t("settings.compactMode.desc"))
       .addToggle((toggle: ToggleComponent) => {
         toggle
           .setValue(this.plugin.settings.compactMode)
@@ -131,12 +134,12 @@ class MindMapSettingTab extends PluginSettingTab {
 
     // 主题配色
     new Setting(containerEl)
-      .setName("主题配色")
-      .setDesc("新建导图时的默认分支配色。已有文件以自身设置为准。")
+      .setName(t("settings.theme.name"))
+      .setDesc(t("settings.theme.desc"))
       .addDropdown((dd) => {
-        dd.addOption("classic", "经典（白底不染色）");
-        dd.addOption("rainbow", "彩虹分支（一级七彩）");
-        dd.addOption("pastel", "柔和色板（一级柔和色）");
+        dd.addOption("classic", t("settings.theme.classic"));
+        dd.addOption("rainbow", t("settings.theme.rainbow"));
+        dd.addOption("pastel", t("settings.theme.pastel"));
         dd.setValue(this.plugin.settings.theme);
         dd.onChange(async (value: string) => {
           this.plugin.settings.theme = value as ThemeKey;
@@ -146,8 +149,8 @@ class MindMapSettingTab extends PluginSettingTab {
 
     // 缩略图开关
     new Setting(containerEl)
-      .setName("显示缩略图")
-      .setDesc("打开导图时是否显示右下角缩略图（mini map）。工具栏「缩略图」按钮可临时切换。")
+      .setName(t("settings.showMinimap.name"))
+      .setDesc(t("settings.showMinimap.desc"))
       .addToggle((toggle: ToggleComponent) => {
         toggle
           .setValue(this.plugin.settings.showMinimap)
@@ -159,11 +162,11 @@ class MindMapSettingTab extends PluginSettingTab {
 
     // 默认缩放
     new Setting(containerEl)
-      .setName("默认缩放")
-      .setDesc("打开导图时的初始缩放：适应视图（自动缩放至全屏可见）或 100%（原始大小，可手动拖拽/滚轮缩放）。")
+      .setName(t("settings.defaultZoom.name"))
+      .setDesc(t("settings.defaultZoom.desc"))
       .addDropdown((dd) => {
-        dd.addOption("fit", "适应视图（自动缩放）");
-        dd.addOption("100", "100%（原始大小）");
+        dd.addOption("fit", t("settings.defaultZoom.fit"));
+        dd.addOption("100", t("settings.defaultZoom.oneHundred"));
         dd.setValue(this.plugin.settings.defaultZoom);
         dd.onChange(async (value: string) => {
           this.plugin.settings.defaultZoom = value as "fit" | "100";
@@ -174,11 +177,11 @@ class MindMapSettingTab extends PluginSettingTab {
     containerEl.createDiv({ cls: "setting-item-description" }, (div) => {
       const p = div.createEl("p");
       p.setCssStyles({ marginTop: "12px", color: "var(--text-muted)", fontSize: "13px" });
-      p.append("当前间隔：");
+      p.append(t("settings.currentInterval"));
       const strong = p.createEl("strong");
-      strong.textContent = `${this.plugin.settings.autoSaveInterval} 秒`;
+      strong.textContent = t("settings.intervalSeconds", { count: String(this.plugin.settings.autoSaveInterval) });
       p.createEl("br");
-      p.append("快捷键：Ctrl+S 手动保存 · Tab 添加子主题 · Enter 添加同级 · Delete 删除节点");
+      p.append(t("settings.shortcuts"));
     });
   }
 }
@@ -197,12 +200,12 @@ class FileNameModal extends Modal {
   onOpen() {
     const { contentEl } = this;
     new Setting(contentEl)
-      .setName("新建思维导图")
+      .setName(t("modal.newMindmap.title"))
       .setHeading();
     const input = contentEl.createEl("input", {
       type: "text",
       value: this.value,
-      placeholder: "文件名（无需扩展名）",
+      placeholder: t("modal.newMindmap.placeholder"),
     });
     input.addClass("mm-filename-input");
     input.focus();
@@ -210,13 +213,13 @@ class FileNameModal extends Modal {
 
     const hint = contentEl.createEl("p", {
       cls: "setting-item-description",
-      text: "将创建 .xmind 文件，可在 Obsidian 中双击打开编辑。",
+      text: t("modal.newMindmap.hint"),
     });
     hint.setCssStyles({ margin: "8px 0" })
 
     const row = contentEl.createDiv({ cls: "modal-button-row" });
-    const ok = row.createEl("button", { text: "创建", cls: "mod-cta" });
-    const cancel = row.createEl("button", { text: "取消" });
+    const ok = row.createEl("button", { text: t("modal.create"), cls: "mod-cta" });
+    const cancel = row.createEl("button", { text: t("modal.cancel") });
     // mod-cta 在无主题变量时可能没底色，补一个显式样式
     ok.setCssStyles({ marginRight: "8px" })
 
@@ -255,6 +258,16 @@ export default class MindMapPlugin extends Plugin {
     // 设置插件实例引用（让 MindMapView 能访问插件进行自动保存注册）
     setPluginInstance(this);
 
+    // 注册工具栏自定义图标
+    registerToolbarIcons();
+
+    // 注册自定义「思维导图」图标（供右键菜单使用）
+    // Obsidian addIcon 要求：不带 <svg> 外层标签，内容需 fit 在 0 0 100 100 viewBox。
+    addIcon(
+      "mindmap",
+      `<g transform="scale(4.1666667)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8.2 11L16 6.6M8.2 13L16 17.4"/></g>`
+    );
+
     this.registerView(VIEW_TYPE_MINDMAP, (leaf) => new MindMapView(leaf));
     this.registerExtensions(["xmind"], VIEW_TYPE_MINDMAP);
 
@@ -264,7 +277,7 @@ export default class MindMapPlugin extends Plugin {
     // 新建思维导图（命令面板 / 快捷键）
     this.addCommand({
       id: "new-mindmap",
-      name: "新建思维导图 (.xmind)",
+      name: t("command.newMindmap"),
       callback: () => this.newMindMap(),
     });
 
@@ -275,8 +288,8 @@ export default class MindMapPlugin extends Plugin {
         const targetFolder = file instanceof TFolder ? file : file.parent;
         menu.addItem((item) =>
           item
-            .setTitle("新建思维导图")
-            .setIcon("git-graph")
+            .setTitle(t("menu.newMindmap"))
+            .setIcon("mindmap")
             .onClick(() => this.newMindMap(targetFolder))
         );
       })
@@ -285,7 +298,7 @@ export default class MindMapPlugin extends Plugin {
     // 保存当前思维导图（Ctrl+S 也会触发视图的 save()）
     this.addCommand({
       id: "save-mindmap",
-      name: "保存当前思维导图",
+      name: t("command.saveMindmap"),
       checkCallback: (checking) => {
         const view = this.app.workspace.getActiveViewOfType(MindMapView);
         if (view) {
@@ -298,7 +311,7 @@ export default class MindMapPlugin extends Plugin {
   }
 
   async newMindMap(targetFolder?: TFolder | null) {
-    let defaultName = "思维导图";
+    let defaultName = t("default.mindMapName");
     if (targetFolder) {
       defaultName = targetFolder.name;
     } else {
@@ -310,14 +323,14 @@ export default class MindMapPlugin extends Plugin {
       try {
         await this.createMindMapFile(name, targetFolder);
       } catch (e) {
-        new Notice("新建思维导图失败：" + (e as Error).message);
+        new Notice(t("notice.createFail", { msg: (e as Error).message }));
         console.error(e);
       }
     }).open();
   }
 
   private async createMindMapFile(rawName: string, targetFolder?: TFolder | null) {
-    let fname = (rawName || "思维导图").trim();
+    let fname = (rawName || t("default.mindMapName")).trim();
     if (!fname.toLowerCase().endsWith(".xmind")) fname += ".xmind";
 
     let folder = "";
@@ -330,14 +343,14 @@ export default class MindMapPlugin extends Plugin {
     const path = folder ? `${folder}/${fname}` : fname;
 
     if (this.app.vault.getAbstractFileByPath(path)) {
-      new Notice("文件已存在：" + path);
+      new Notice(t("notice.fileExists", { path }));
       return;
     }
 
     const rootTopic: XTopic = {
       id: genId("topic"),
       class: "topic",
-      title: "中心主题",
+      title: t("default.centerTopic"),
       children: { attached: [] },
     };
     // 套用插件默认主题与紧凑设置（仅影响新建文件，已有文件以自身存储为准）
@@ -354,7 +367,7 @@ export default class MindMapPlugin extends Plugin {
     const data = await serializeXMind(sheets);
     const file = await this.app.vault.createBinary(path, data);
     await this.app.workspace.getLeaf(true).openFile(file);
-    new Notice("已创建 " + path);
+    new Notice(t("notice.created", { path }));
   }
 
   // ---------- 设置管理 ----------

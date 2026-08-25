@@ -4,6 +4,7 @@
 // JSON.stringify 默认不会转义它们，因此可直接使用。
 import { unzip, zip, strFromU8, strToU8 } from "fflate";
 import type { XSheet } from "./model";
+import { t } from "./i18n";
 
 function u8FromBuf(buf: ArrayBuffer): Uint8Array {
   return new Uint8Array(buf);
@@ -29,12 +30,12 @@ export async function parseXMind(data: ArrayBuffer): Promise<XSheet[]> {
 
   const content = entries["content.json"];
   if (!content) {
-    throw new Error("缺少 content.json，可能不是有效的 XMind 文件");
+    throw new Error(t("error.missingContent"));
   }
   const text = strFromU8(content);
   const sheets = JSON.parse(text);
   if (!Array.isArray(sheets)) {
-    throw new Error("content.json 格式不正确（应为 sheet 数组）");
+    throw new Error(t("error.invalidContent"));
   }
   return sheets as XSheet[];
 }

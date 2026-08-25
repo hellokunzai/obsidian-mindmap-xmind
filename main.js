@@ -47,10 +47,10 @@ __export(main_exports, {
   default: () => MindMapPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian2 = require("obsidian");
+var import_obsidian4 = require("obsidian");
 
 // src/MindMapView.ts
-var import_obsidian = require("obsidian");
+var import_obsidian3 = require("obsidian");
 
 // node_modules/fflate/esm/browser.js
 var ch2 = {};
@@ -310,16 +310,16 @@ var inflt = function(dat, st, buf, dict) {
       var type = bits(dat, pos + 1, 3);
       pos += 3;
       if (!type) {
-        var s = shft(pos) + 4, l = dat[s - 4] | dat[s - 3] << 8, t = s + l;
-        if (t > sl) {
+        var s = shft(pos) + 4, l = dat[s - 4] | dat[s - 3] << 8, t2 = s + l;
+        if (t2 > sl) {
           if (noSt)
             err(0);
           break;
         }
         if (resize)
           cbuf(bt + l);
-        buf.set(dat.subarray(s, t), bt);
-        st.b = bt += l, st.p = pos = t * 8, st.f = final;
+        buf.set(dat.subarray(s, t2), bt);
+        st.b = bt += l, st.p = pos = t2 * 8, st.f = final;
         continue;
       } else if (type == 1)
         lm = flrm, dm = fdrm, lbt = 9, dbt = 5;
@@ -440,46 +440,46 @@ var wbits16 = function(d, p, v) {
   d[o + 2] |= v >> 16;
 };
 var hTree = function(d, mb) {
-  var t = [];
+  var t2 = [];
   for (var i = 0; i < d.length; ++i) {
     if (d[i])
-      t.push({ s: i, f: d[i] });
+      t2.push({ s: i, f: d[i] });
   }
-  var s = t.length;
-  var t2 = t.slice();
+  var s = t2.length;
+  var t22 = t2.slice();
   if (!s)
     return { t: et, l: 0 };
   if (s == 1) {
-    var v = new u8(t[0].s + 1);
-    v[t[0].s] = 1;
+    var v = new u8(t2[0].s + 1);
+    v[t2[0].s] = 1;
     return { t: v, l: 1 };
   }
-  t.sort(function(a, b) {
+  t2.sort(function(a, b) {
     return a.f - b.f;
   });
-  t.push({ s: -1, f: 25001 });
-  var l = t[0], r = t[1], i0 = 0, i1 = 1, i2 = 2;
-  t[0] = { s: -1, f: l.f + r.f, l, r };
+  t2.push({ s: -1, f: 25001 });
+  var l = t2[0], r = t2[1], i0 = 0, i1 = 1, i2 = 2;
+  t2[0] = { s: -1, f: l.f + r.f, l, r };
   while (i1 != s - 1) {
-    l = t[t[i0].f < t[i2].f ? i0++ : i2++];
-    r = t[i0 != i1 && t[i0].f < t[i2].f ? i0++ : i2++];
-    t[i1++] = { s: -1, f: l.f + r.f, l, r };
+    l = t2[t2[i0].f < t2[i2].f ? i0++ : i2++];
+    r = t2[i0 != i1 && t2[i0].f < t2[i2].f ? i0++ : i2++];
+    t2[i1++] = { s: -1, f: l.f + r.f, l, r };
   }
-  var maxSym = t2[0].s;
+  var maxSym = t22[0].s;
   for (var i = 1; i < s; ++i) {
-    if (t2[i].s > maxSym)
-      maxSym = t2[i].s;
+    if (t22[i].s > maxSym)
+      maxSym = t22[i].s;
   }
   var tr = new u16(maxSym + 1);
-  var mbt = ln(t[i1 - 1], tr, 0);
+  var mbt = ln(t2[i1 - 1], tr, 0);
   if (mbt > mb) {
     var i = 0, dt = 0;
     var lft = mbt - mb, cst = 1 << lft;
-    t2.sort(function(a, b) {
+    t22.sort(function(a, b) {
       return tr[b.s] - tr[a.s] || a.f - b.f;
     });
     for (; i < s; ++i) {
-      var i2_1 = t2[i].s;
+      var i2_1 = t22[i].s;
       if (tr[i2_1] > mb) {
         dt += cst - (1 << mbt - tr[i2_1]);
         tr[i2_1] = mb;
@@ -488,14 +488,14 @@ var hTree = function(d, mb) {
     }
     dt >>= lft;
     while (dt > 0) {
-      var i2_2 = t2[i].s;
+      var i2_2 = t22[i].s;
       if (tr[i2_2] < mb)
         dt -= 1 << mb - tr[i2_2]++ - 1;
       else
         ++i;
     }
     for (; i >= 0 && dt; --i) {
-      var i2_3 = t2[i].s;
+      var i2_3 = t22[i].s;
       if (tr[i2_3] == mb) {
         --tr[i2_3];
         ++dt;
@@ -563,8 +563,8 @@ var wfblk = function(out, pos, dat) {
 var wblk = function(dat, out, final, syms, lf, df, eb, li, bs, bl, p) {
   wbits(out, p++, final);
   ++lf[256];
-  var _a2 = hTree(lf, 15), dlt = _a2.t, mlb = _a2.l;
-  var _b2 = hTree(df, 15), ddt = _b2.t, mdb = _b2.l;
+  var _a3 = hTree(lf, 15), dlt = _a3.t, mlb = _a3.l;
+  var _b3 = hTree(df, 15), ddt = _b3.t, mdb = _b3.l;
   var _c = lc(dlt), lclt = _c.c, nlc = _c.n;
   var _d = lc(ddt), lcdt = _d.c, ndc = _d.n;
   var lcfreq = new u16(19);
@@ -728,14 +728,14 @@ var dflt = function(dat, lvl, plvl, pre, post, st) {
   return slc(o, 0, pre + shft(pos) + post);
 };
 var crct = /* @__PURE__ */ function() {
-  var t = new Int32Array(256);
+  var t2 = new Int32Array(256);
   for (var i = 0; i < 256; ++i) {
     var c = i, k = 9;
     while (--k)
       c = (c & 1 && -306674912) ^ c >>> 1;
-    t[i] = c;
+    t2[i] = c;
   }
-  return t;
+  return t2;
 }();
 var crc = function() {
   var c = -1;
@@ -788,8 +788,8 @@ var wcln = function(fn, fnStr, td2) {
           fnStr += st_1.slice(spInd, st_1.indexOf("(", spInd));
         } else {
           fnStr += st_1;
-          for (var t in v.prototype)
-            fnStr += ";" + k + ".prototype." + t + "=" + v.prototype[t].toString();
+          for (var t2 in v.prototype)
+            fnStr += ";" + k + ".prototype." + t2 + "=" + v.prototype[t2].toString();
         }
       } else
         fnStr += st_1;
@@ -884,16 +884,16 @@ function inflate(data, opts, cb) {
 function inflateSync(data, opts) {
   return inflt(data, { i: 2 }, opts && opts.out, opts && opts.dictionary);
 }
-var fltn = function(d, p, t, o) {
+var fltn = function(d, p, t2, o) {
   for (var k in d) {
     var val = d[k], n = p + k, op = o;
     if (Array.isArray(val))
       op = mrg(o, val[1]), val = val[0];
     if (ArrayBuffer.isView(val))
-      t[n] = [val, op];
+      t2[n] = [val, op];
     else {
-      t[n += "/"] = [new u8(0), op];
-      fltn(val, n, t, o);
+      t2[n += "/"] = [new u8(0), op];
+      fltn(val, n, t2, o);
     }
   }
 };
@@ -963,7 +963,7 @@ function strFromU8(dat, latin1) {
   } else if (td) {
     return td.decode(dat);
   } else {
-    var _a2 = dutf8(dat), s = _a2.s, r = _a2.r;
+    var _a3 = dutf8(dat), s = _a3.s, r = _a3.r;
     if (r.length)
       err(8);
     return s;
@@ -974,7 +974,7 @@ var slzh = function(d, b) {
 };
 var zh = function(d, b, z) {
   var fnl = b2(d, b + 28), efl = b2(d, b + 30), fn = strFromU8(d.subarray(b + 46, b + 46 + fnl), !(b2(d, b + 8) & 2048)), es = b + 46 + fnl;
-  var _a2 = z64hs(d, es, efl, z, b4(d, b + 20), b4(d, b + 24), b4(d, b + 42)), sc = _a2[0], su = _a2[1], off = _a2[2];
+  var _a3 = z64hs(d, es, efl, z, b4(d, b + 20), b4(d, b + 24), b4(d, b + 42)), sc = _a3[0], su = _a3[1], off = _a3[2];
   return [b2(d, b + 10), sc, su, fn, es + efl + b2(d, b + 32), off];
 };
 var z64hs = function(d, b, l, z, sc, su, off) {
@@ -1100,7 +1100,7 @@ function zip(data, opts, cb) {
     cbf();
   var _loop_1 = function(i2) {
     var fn = k[i2];
-    var _a2 = r[fn], file = _a2[0], p = _a2[1];
+    var _a3 = r[fn], file = _a3[0], p = _a3[1];
     var c = crc(), size = file.length;
     c.p(file);
     var f = strToU8(fn), s = f.length;
@@ -1191,7 +1191,7 @@ function unzip(data, opts, cb) {
     }
     var fltr = opts && opts.filter;
     var _loop_3 = function(i2) {
-      var _a2 = zh(data, o, z), c_1 = _a2[0], sc = _a2[1], su = _a2[2], fn = _a2[3], no = _a2[4], off = _a2[5], b = slzh(data, off);
+      var _a3 = zh(data, o, z), c_1 = _a3[0], sc = _a3[1], su = _a3[2], fn = _a3[3], no = _a3[4], off = _a3[5], b = slzh(data, off);
       o = no;
       var cbl = function(e2, d) {
         if (e2) {
@@ -1235,6 +1235,325 @@ function unzip(data, opts, cb) {
   return tAll;
 }
 
+// src/i18n/index.ts
+var import_obsidian = require("obsidian");
+var rawLocale = import_obsidian.moment.locale().toLowerCase().replace("_", "-");
+var lang = rawLocale.split("-")[0];
+var translations = {
+  "en": {
+    // ---- 命令 / 菜单 ----
+    "command.newMindmap": "New Mind Map (.xmind)",
+    "command.saveMindmap": "Save Current Mind Map",
+    "menu.newMindmap": "New Mind Map",
+    // ---- Notice ----
+    "notice.createFail": "Failed to create mind map: {{msg}}",
+    "notice.fileExists": "File already exists: {{path}}",
+    "notice.created": "Created {{path}}",
+    "notice.parseFail": "Failed to parse mind map: {{msg}}",
+    "notice.noExportContent": "Nothing to export",
+    "notice.pngFailCanvas": "PNG export failed: cannot create canvas",
+    "notice.pngFail": "PNG export failed",
+    "notice.noOpenFile": "No file is open",
+    "notice.exported": "Exported {{path}}",
+    "notice.exportFail": "Export failed: {{msg}}",
+    "notice.rootNoSibling": "The root topic has no siblings",
+    "notice.cannotDeleteRoot": "Cannot delete the root topic",
+    "notice.autoColored": "Auto-colored {{count}} branches",
+    "notice.saved": "Mind map saved",
+    "notice.saveFail": "Save failed: {{msg}}",
+    // ---- 设置面板 ----
+    "settings.general": "General",
+    "settings.autoSave.name": "Auto Save",
+    "settings.autoSave.desc": "Automatically save changes while editing, without clicking the save button.",
+    "settings.autoSaveInterval.name": "Auto Save Interval",
+    "settings.autoSaveInterval.desc": "Interval between auto saves (seconds)",
+    "settings.resetInterval": "Reset to default ({{seconds}}s)",
+    "settings.appearance": "Appearance & Defaults",
+    "settings.defaultLayout.name": "Default Layout",
+    "settings.defaultLayout.desc": "Layout used for new mind maps",
+    "settings.compactMode.name": "Compact Mode",
+    "settings.compactMode.desc": "New maps use the compact layout by default (smaller spacing, more content visible). Existing files keep their own settings.",
+    "settings.theme.name": "Theme",
+    "settings.theme.desc": "Default branch colors for new maps. Existing files keep their own settings.",
+    "settings.theme.classic": "Classic (no coloring)",
+    "settings.theme.rainbow": "Rainbow (colorful branches)",
+    "settings.theme.pastel": "Pastel (soft palette)",
+    "settings.showMinimap.name": "Show Minimap",
+    "settings.showMinimap.desc": 'Whether to show the minimap when opening a map. The "Minimap" toolbar button toggles it temporarily.',
+    "settings.defaultZoom.name": "Default Zoom",
+    "settings.defaultZoom.desc": "Initial zoom when opening a map: Fit to view (auto scale) or 100% (original size, drag/scroll to zoom).",
+    "settings.defaultZoom.fit": "Fit to view (auto zoom)",
+    "settings.defaultZoom.oneHundred": "100% (original size)",
+    "settings.currentInterval": "Current interval: ",
+    "settings.intervalSeconds": "{{count}} seconds",
+    "settings.shortcuts": "Shortcuts: Ctrl+S save \xB7 Tab add child \xB7 Enter add sibling \xB7 Delete remove node",
+    // ---- Modal ----
+    "modal.newMindmap.title": "New Mind Map",
+    "modal.newMindmap.placeholder": "File name (without extension)",
+    "modal.newMindmap.hint": "A .xmind file will be created; double-click to open and edit it in Obsidian.",
+    "modal.create": "Create",
+    "modal.cancel": "Cancel",
+    // ---- 默认文案 ----
+    "default.mindMapName": "Mind Map",
+    "default.centerTopic": "Central Topic",
+    "default.newTopic": "New Topic",
+    "default.emptyText": "(empty)",
+    // ---- 视图 ----
+    "view.fallbackTitle": "Mind Map",
+    "view.empty": 'No mind map file is open. Use the "New Mind Map (.xmind)" command to get started.',
+    // ---- 工具栏 ----
+    "toolbar.fitView": "Fit to View",
+    "toolbar.save": "Save",
+    "toolbar.addChild": "Add Child",
+    "toolbar.addSibling": "Add Sibling",
+    "toolbar.delete": "Delete",
+    "toolbar.collapse": "Collapse/Expand",
+    "toolbar.exportSvg": "Export SVG",
+    "toolbar.exportPng": "Export PNG",
+    "toolbar.minimap": "Minimap",
+    "toolbar.panel": "Open Panel",
+    "toolbar.more": "More",
+    "toolbar.hint": "Select a node \xB7 Tab add child / Enter add sibling / Delete remove / Space collapse / Double-click edit",
+    // ---- 侧栏 Tab ----
+    "tab.format": "Canvas",
+    "tab.markers": "Markers",
+    "tab.stickers": "Stickers",
+    // ---- 侧栏面板 ----
+    "side.section.mindmap": "Mind Map",
+    "side.section.canvasStyle": "Canvas Style",
+    "side.section.nodeStyle": "Node Style",
+    "side.section.info": "Info",
+    "side.canvas.rainbow": "Rainbow Branches",
+    "side.canvas.compact": "Compact Layout",
+    "side.canvas.fullscreen": "Fullscreen",
+    "side.node.current": "Current: {{name}}",
+    "side.node.customColor": "Custom Color",
+    "side.node.clearColor": "Clear Node Color",
+    "side.node.autoColor": "Auto-Color Branches",
+    "side.node.clearAllColors": "Clear All Node Colors",
+    "side.stats.topics": "Topics: {{count}}",
+    "side.stats.maxDepth": "Max Depth: {{depth}}",
+    "side.stats.marked": "Marked Nodes: {{count}}",
+    "side.stats.stickers": "Nodes with Stickers: {{count}}",
+    "side.stats.colored": "Colored Nodes: {{count}}",
+    "side.marker.emptyHint": "Select a node, then click a marker below to add or remove it.",
+    "side.sticker.emptyHint": "Select a node, then click a sticker below to add or remove it.",
+    "side.currentNode": "Current Node",
+    "side.clearAll": "Clear All",
+    // ---- 右键菜单 ----
+    "ctx.addChild": "Add Child Topic",
+    "ctx.addSibling": "Add Sibling Topic",
+    "ctx.editText": "Edit Text",
+    "ctx.expand": "Expand",
+    "ctx.collapse": "Collapse",
+    "ctx.delete": "Delete",
+    "ctx.resetWidth": "Reset Width",
+    // ---- 节点 ----
+    "node.resizeHint": "Drag to resize node width",
+    // ---- 布局名称 ----
+    "layout.balance": "Balance",
+    "layout.right": "Right",
+    "layout.left": "Left",
+    "layout.orgChart": "Org Chart",
+    "layout.tree": "Tree",
+    "layout.logic": "Logic",
+    "layout.timeline": "Timeline",
+    "layout.fishbone": "Fishbone",
+    // ---- 贴纸分组 ----
+    "sticker.work": "Work",
+    "sticker.life": "Life",
+    "sticker.nature": "Nature",
+    "sticker.symbol": "Symbols",
+    // ---- 标记 ----
+    "marker.cat.label": "Label",
+    "marker.cat.priority": "Priority",
+    "marker.cat.task": "Task",
+    "marker.cat.flag": "Flag",
+    "marker.cat.star": "Star",
+    "marker.cat.person": "People",
+    "marker.cat.symbol": "Symbol",
+    "marker.labelTag": "Label {{n}}",
+    "marker.taskStart": "Start",
+    "marker.taskDone": "Done",
+    "marker.taskPaused": "Paused",
+    "marker.labelFlag": "Flag {{n}}",
+    "marker.starCount": "{{n}} Star",
+    "marker.personCount": "Person {{n}}",
+    "marker.color.red": "Red",
+    "marker.color.orange": "Orange",
+    "marker.color.yellow": "Yellow",
+    "marker.color.green": "Green",
+    "marker.color.blue": "Blue",
+    "marker.color.purple": "Purple",
+    "marker.color.gray": "Gray",
+    // ---- 错误 ----
+    "error.missingContent": "Missing content.json, this may not be a valid XMind file",
+    "error.invalidContent": "content.json is not in the expected format (should be an array of sheets)"
+  },
+  "zh-cn": {
+    // ---- 命令 / 菜单 ----
+    "command.newMindmap": "\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE (.xmind)",
+    "command.saveMindmap": "\u4FDD\u5B58\u5F53\u524D\u601D\u7EF4\u5BFC\u56FE",
+    "menu.newMindmap": "\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE",
+    // ---- Notice ----
+    "notice.createFail": "\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE\u5931\u8D25\uFF1A{{msg}}",
+    "notice.fileExists": "\u6587\u4EF6\u5DF2\u5B58\u5728\uFF1A{{path}}",
+    "notice.created": "\u5DF2\u521B\u5EFA {{path}}",
+    "notice.parseFail": "\u65E0\u6CD5\u89E3\u6790\u601D\u7EF4\u5BFC\u56FE\uFF1A{{msg}}",
+    "notice.noExportContent": "\u6CA1\u6709\u53EF\u5BFC\u51FA\u7684\u5185\u5BB9",
+    "notice.pngFailCanvas": "PNG \u5BFC\u51FA\u5931\u8D25\uFF1A\u65E0\u6CD5\u521B\u5EFA\u753B\u5E03",
+    "notice.pngFail": "PNG \u5BFC\u51FA\u5931\u8D25",
+    "notice.noOpenFile": "\u6CA1\u6709\u6253\u5F00\u7684\u6587\u4EF6",
+    "notice.exported": "\u5DF2\u5BFC\u51FA {{path}}",
+    "notice.exportFail": "\u5BFC\u51FA\u5931\u8D25\uFF1A{{msg}}",
+    "notice.rootNoSibling": "\u6839\u4E3B\u9898\u6CA1\u6709\u540C\u7EA7\u4E3B\u9898",
+    "notice.cannotDeleteRoot": "\u4E0D\u80FD\u5220\u9664\u6839\u4E3B\u9898",
+    "notice.autoColored": "\u5DF2\u6309\u5206\u652F\u81EA\u52A8\u67D3\u8272\uFF08{{count}} \u4E2A\u5206\u652F\uFF09",
+    "notice.saved": "\u601D\u7EF4\u5BFC\u56FE\u5DF2\u4FDD\u5B58",
+    "notice.saveFail": "\u4FDD\u5B58\u5931\u8D25\uFF1A{{msg}}",
+    // ---- 设置面板 ----
+    "settings.general": "\u5E38\u89C4",
+    "settings.autoSave.name": "\u81EA\u52A8\u4FDD\u5B58",
+    "settings.autoSave.desc": "\u7F16\u8F91\u601D\u7EF4\u5BFC\u56FE\u65F6\u81EA\u52A8\u4FDD\u5B58\u66F4\u6539\uFF0C\u65E0\u9700\u624B\u52A8\u70B9\u51FB\u4FDD\u5B58\u6309\u94AE",
+    "settings.autoSaveInterval.name": "\u81EA\u52A8\u4FDD\u5B58\u95F4\u9694",
+    "settings.autoSaveInterval.desc": "\u81EA\u52A8\u4FDD\u5B58\u7684\u65F6\u95F4\u95F4\u9694\uFF08\u79D2\uFF09",
+    "settings.resetInterval": "\u6062\u590D\u9ED8\u8BA4\u503C ({{seconds}}\u79D2)",
+    "settings.appearance": "\u5916\u89C2\u4E0E\u9ED8\u8BA4",
+    "settings.defaultLayout.name": "\u9ED8\u8BA4\u5E03\u5C40",
+    "settings.defaultLayout.desc": "\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE\u65F6\u4F7F\u7528\u7684\u9ED8\u8BA4\u5E03\u5C40",
+    "settings.compactMode.name": "\u7D27\u51D1\u6A21\u5F0F",
+    "settings.compactMode.desc": "\u65B0\u5EFA\u5BFC\u56FE\u9ED8\u8BA4\u4F7F\u7528\u7D27\u51D1\u5E03\u5C40\uFF08\u95F4\u8DDD\u66F4\u5C0F\uFF0C\u53EF\u663E\u793A\u66F4\u591A\u5185\u5BB9\uFF09\u3002\u5DF2\u6709\u6587\u4EF6\u4EE5\u81EA\u8EAB\u8BBE\u7F6E\u4E3A\u51C6\u3002",
+    "settings.theme.name": "\u4E3B\u9898\u914D\u8272",
+    "settings.theme.desc": "\u65B0\u5EFA\u5BFC\u56FE\u65F6\u7684\u9ED8\u8BA4\u5206\u652F\u914D\u8272\u3002\u5DF2\u6709\u6587\u4EF6\u4EE5\u81EA\u8EAB\u8BBE\u7F6E\u4E3A\u51C6\u3002",
+    "settings.theme.classic": "\u7ECF\u5178\uFF08\u767D\u5E95\u4E0D\u67D3\u8272\uFF09",
+    "settings.theme.rainbow": "\u5F69\u8679\u5206\u652F\uFF08\u4E00\u7EA7\u4E03\u5F69\uFF09",
+    "settings.theme.pastel": "\u67D4\u548C\u8272\u677F\uFF08\u4E00\u7EA7\u67D4\u548C\u8272\uFF09",
+    "settings.showMinimap.name": "\u663E\u793A\u7F29\u7565\u56FE",
+    "settings.showMinimap.desc": "\u6253\u5F00\u5BFC\u56FE\u65F6\u662F\u5426\u663E\u793A\u53F3\u4E0B\u89D2\u7F29\u7565\u56FE\uFF08mini map\uFF09\u3002\u5DE5\u5177\u680F\u300C\u7F29\u7565\u56FE\u300D\u6309\u94AE\u53EF\u4E34\u65F6\u5207\u6362\u3002",
+    "settings.defaultZoom.name": "\u9ED8\u8BA4\u7F29\u653E",
+    "settings.defaultZoom.desc": "\u6253\u5F00\u5BFC\u56FE\u65F6\u7684\u521D\u59CB\u7F29\u653E\uFF1A\u9002\u5E94\u89C6\u56FE\uFF08\u81EA\u52A8\u7F29\u653E\u81F3\u5168\u5C4F\u53EF\u89C1\uFF09\u6216 100%\uFF08\u539F\u59CB\u5927\u5C0F\uFF0C\u53EF\u624B\u52A8\u62D6\u62FD/\u6EDA\u8F6E\u7F29\u653E\uFF09\u3002",
+    "settings.defaultZoom.fit": "\u9002\u5E94\u89C6\u56FE\uFF08\u81EA\u52A8\u7F29\u653E\uFF09",
+    "settings.defaultZoom.oneHundred": "100%\uFF08\u539F\u59CB\u5927\u5C0F\uFF09",
+    "settings.currentInterval": "\u5F53\u524D\u95F4\u9694\uFF1A",
+    "settings.intervalSeconds": "{{count}} \u79D2",
+    "settings.shortcuts": "\u5FEB\u6377\u952E\uFF1ACtrl+S \u624B\u52A8\u4FDD\u5B58 \xB7 Tab \u6DFB\u52A0\u5B50\u4E3B\u9898 \xB7 Enter \u6DFB\u52A0\u540C\u7EA7 \xB7 Delete \u5220\u9664\u8282\u70B9",
+    // ---- Modal ----
+    "modal.newMindmap.title": "\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE",
+    "modal.newMindmap.placeholder": "\u6587\u4EF6\u540D\uFF08\u65E0\u9700\u6269\u5C55\u540D\uFF09",
+    "modal.newMindmap.hint": "\u5C06\u521B\u5EFA .xmind \u6587\u4EF6\uFF0C\u53EF\u5728 Obsidian \u4E2D\u53CC\u51FB\u6253\u5F00\u7F16\u8F91\u3002",
+    "modal.create": "\u521B\u5EFA",
+    "modal.cancel": "\u53D6\u6D88",
+    // ---- 默认文案 ----
+    "default.mindMapName": "\u601D\u7EF4\u5BFC\u56FE",
+    "default.centerTopic": "\u4E2D\u5FC3\u4E3B\u9898",
+    "default.newTopic": "\u65B0\u4E3B\u9898",
+    "default.emptyText": "(\u7A7A)",
+    // ---- 视图 ----
+    "view.fallbackTitle": "\u601D\u7EF4\u5BFC\u56FE",
+    "view.empty": "\u6CA1\u6709\u6253\u5F00\u7684\u601D\u7EF4\u5BFC\u56FE\u6587\u4EF6\u3002\u4F7F\u7528\u547D\u4EE4\u300C\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE (.xmind)\u300D\u5F00\u59CB\u3002",
+    // ---- 工具栏 ----
+    "toolbar.fitView": "\u9002\u5E94\u89C6\u56FE",
+    "toolbar.save": "\u4FDD\u5B58",
+    "toolbar.addChild": "\u5B50\u4E3B\u9898",
+    "toolbar.addSibling": "\u540C\u7EA7\u4E3B\u9898",
+    "toolbar.delete": "\u5220\u9664",
+    "toolbar.collapse": "\u6298\u53E0/\u5C55\u5F00",
+    "toolbar.exportSvg": "\u5BFC\u51FA SVG",
+    "toolbar.exportPng": "\u5BFC\u51FA PNG",
+    "toolbar.minimap": "\u7F29\u7565\u56FE",
+    "toolbar.panel": "\u6253\u5F00\u9762\u677F",
+    "toolbar.more": "\u66F4\u591A",
+    "toolbar.hint": "\u9009\u4E2D\u8282\u70B9 \xB7 Tab \u52A0\u5B50 / Enter \u540C\u7EA7 / Delete \u5220\u9664 / \u7A7A\u683C \u6298\u53E0 / \u53CC\u51FB\u7F16\u8F91",
+    // ---- 侧栏 Tab ----
+    "tab.format": "\u753B\u5E03",
+    "tab.markers": "\u6807\u8BB0",
+    "tab.stickers": "\u8D34\u7EB8",
+    // ---- 侧栏面板 ----
+    "side.section.mindmap": "\u601D\u7EF4\u5BFC\u56FE",
+    "side.section.canvasStyle": "\u753B\u5E03\u6837\u5F0F",
+    "side.section.nodeStyle": "\u8282\u70B9\u6837\u5F0F",
+    "side.section.info": "\u4FE1\u606F",
+    "side.canvas.rainbow": "\u5F69\u8679\u5206\u652F",
+    "side.canvas.compact": "\u7D27\u51D1\u5E03\u5C40",
+    "side.canvas.fullscreen": "\u5168\u5C4F\u663E\u793A",
+    "side.node.current": "\u5F53\u524D\uFF1A{{name}}",
+    "side.node.customColor": "\u81EA\u5B9A\u4E49\u989C\u8272",
+    "side.node.clearColor": "\u6E05\u9664\u6B64\u8282\u70B9\u989C\u8272",
+    "side.node.autoColor": "\u6309\u5206\u652F\u81EA\u52A8\u67D3\u8272",
+    "side.node.clearAllColors": "\u6E05\u9664\u6240\u6709\u8282\u70B9\u989C\u8272",
+    "side.stats.topics": "\u4E3B\u9898\u6570\uFF1A{{count}}",
+    "side.stats.maxDepth": "\u6700\u5927\u6DF1\u5EA6\uFF1A{{depth}}",
+    "side.stats.marked": "\u5E26\u6807\u8BB0\u7684\u8282\u70B9\uFF1A{{count}}",
+    "side.stats.stickers": "\u5E26\u8D34\u7EB8\u7684\u8282\u70B9\uFF1A{{count}}",
+    "side.stats.colored": "\u5E26\u989C\u8272\u7684\u8282\u70B9\uFF1A{{count}}",
+    "side.marker.emptyHint": "\u9009\u4E2D\u4E00\u4E2A\u8282\u70B9\u540E\uFF0C\u70B9\u51FB\u4E0B\u65B9\u6807\u8BB0\u5373\u53EF\u7ED9\u8BE5\u8282\u70B9\u6DFB\u52A0\u6216\u79FB\u9664\u6807\u8BB0\u3002",
+    "side.sticker.emptyHint": "\u9009\u4E2D\u4E00\u4E2A\u8282\u70B9\u540E\uFF0C\u70B9\u51FB\u4E0B\u65B9\u8D34\u7EB8\u5373\u53EF\u7ED9\u8BE5\u8282\u70B9\u6DFB\u52A0\u6216\u79FB\u9664\u8D34\u7EB8\u3002",
+    "side.currentNode": "\u5F53\u524D\u8282\u70B9",
+    "side.clearAll": "\u6E05\u9664\u5168\u90E8",
+    // ---- 右键菜单 ----
+    "ctx.addChild": "\u6DFB\u52A0\u5B50\u4E3B\u9898",
+    "ctx.addSibling": "\u6DFB\u52A0\u540C\u7EA7\u4E3B\u9898",
+    "ctx.editText": "\u7F16\u8F91\u6587\u672C",
+    "ctx.expand": "\u5C55\u5F00",
+    "ctx.collapse": "\u6298\u53E0",
+    "ctx.delete": "\u5220\u9664",
+    "ctx.resetWidth": "\u91CD\u7F6E\u5BBD\u5EA6",
+    // ---- 节点 ----
+    "node.resizeHint": "\u62D6\u62FD\u8C03\u6574\u8282\u70B9\u5BBD\u5EA6",
+    // ---- 布局名称 ----
+    "layout.balance": "\u5E73\u8861\u56FE",
+    "layout.right": "\u5411\u53F3\u56FE",
+    "layout.left": "\u5411\u5DE6\u56FE",
+    "layout.orgChart": "\u7EC4\u7EC7\u7ED3\u6784\u56FE",
+    "layout.tree": "\u6811\u5F62\u56FE",
+    "layout.logic": "\u903B\u8F91\u56FE",
+    "layout.timeline": "\u65F6\u95F4\u8F74",
+    "layout.fishbone": "\u9C7C\u9AA8\u56FE",
+    // ---- 贴纸分组 ----
+    "sticker.work": "\u5DE5\u4F5C",
+    "sticker.life": "\u751F\u6D3B",
+    "sticker.nature": "\u81EA\u7136",
+    "sticker.symbol": "\u7B26\u53F7",
+    // ---- 标记 ----
+    "marker.cat.label": "\u6807\u7B7E",
+    "marker.cat.priority": "\u4F18\u5148\u7EA7",
+    "marker.cat.task": "\u4EFB\u52A1",
+    "marker.cat.flag": "\u65D7\u6807",
+    "marker.cat.star": "\u661F\u661F",
+    "marker.cat.person": "\u4EBA\u50CF",
+    "marker.cat.symbol": "\u7B26\u53F7",
+    "marker.labelTag": "\u6807\u7B7E {{n}}",
+    "marker.taskStart": "\u5F00\u59CB",
+    "marker.taskDone": "\u5B8C\u6210",
+    "marker.taskPaused": "\u6682\u505C",
+    "marker.labelFlag": "\u65D7\u6807 {{n}}",
+    "marker.starCount": "{{n}} \u661F",
+    "marker.personCount": "\u4EBA\u5458 {{n}}",
+    "marker.color.red": "\u7EA2",
+    "marker.color.orange": "\u6A59",
+    "marker.color.yellow": "\u9EC4",
+    "marker.color.green": "\u7EFF",
+    "marker.color.blue": "\u84DD",
+    "marker.color.purple": "\u7D2B",
+    "marker.color.gray": "\u7070",
+    // ---- 错误 ----
+    "error.missingContent": "\u7F3A\u5C11 content.json\uFF0C\u53EF\u80FD\u4E0D\u662F\u6709\u6548\u7684 XMind \u6587\u4EF6",
+    "error.invalidContent": "content.json \u683C\u5F0F\u4E0D\u6B63\u786E\uFF08\u5E94\u4E3A sheet \u6570\u7EC4\uFF09"
+  }
+};
+var _a2, _b2;
+var table = (_b2 = (_a2 = translations[rawLocale]) != null ? _a2 : translations[lang]) != null ? _b2 : translations["en"];
+function t(key, params) {
+  var _a3, _b3;
+  let text = (_b3 = (_a3 = table[key]) != null ? _a3 : translations["en"][key]) != null ? _b3 : key;
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      text = text.replace(new RegExp(`{{${k}}}`, "g"), v);
+    }
+  }
+  return text;
+}
+
 // src/xmind.ts
 function u8FromBuf(buf) {
   return new Uint8Array(buf);
@@ -1256,12 +1575,12 @@ async function parseXMind(data) {
   );
   const content = entries["content.json"];
   if (!content) {
-    throw new Error("\u7F3A\u5C11 content.json\uFF0C\u53EF\u80FD\u4E0D\u662F\u6709\u6548\u7684 XMind \u6587\u4EF6");
+    throw new Error(t("error.missingContent"));
   }
   const text = strFromU8(content);
   const sheets = JSON.parse(text);
   if (!Array.isArray(sheets)) {
-    throw new Error("content.json \u683C\u5F0F\u4E0D\u6B63\u786E\uFF08\u5E94\u4E3A sheet \u6570\u7EC4\uFF09");
+    throw new Error(t("error.invalidContent"));
   }
   return sheets;
 }
@@ -1316,15 +1635,15 @@ function newTopic(title, id) {
     children: { attached: [] }
   };
 }
-function attachedChildren(t) {
-  var _a2, _b2;
-  return (_b2 = (_a2 = t.children) == null ? void 0 : _a2.attached) != null ? _b2 : [];
+function attachedChildren(t2) {
+  var _a3, _b3;
+  return (_b3 = (_a3 = t2.children) == null ? void 0 : _a3.attached) != null ? _b3 : [];
 }
-function setAttached(t, kids) {
-  if (!t.children) t.children = {};
-  t.children.attached = kids;
+function setAttached(t2, kids) {
+  if (!t2.children) t2.children = {};
+  t2.children.attached = kids;
 }
-function addChild(parent, title = "\u65B0\u4E3B\u9898") {
+function addChild(parent, title = t("default.newTopic")) {
   const child = newTopic(title);
   const kids = attachedChildren(parent);
   kids.push(child);
@@ -1360,9 +1679,9 @@ function findParent(root, id, parent = null) {
   }
   return null;
 }
-function toggleCollapse(t) {
-  t.collapsed = !t.collapsed;
-  if (!t.collapsed && !t.children) t.children = { attached: [] };
+function toggleCollapse(t2) {
+  t2.collapsed = !t2.collapsed;
+  if (!t2.collapsed && !t2.children) t2.children = { attached: [] };
 }
 
 // src/markers.ts
@@ -1386,11 +1705,11 @@ var PALETTE = [
 var MARKER_CATEGORIES = [
   {
     key: "label",
-    name: "\u6807\u7B7E",
+    name: t("marker.cat.label"),
     markers: PALETTE.map(
       (c, i) => ({
         id: `label-${i + 1}`,
-        label: `\u6807\u7B7E ${i + 1}`,
+        label: t("marker.labelTag", { n: String(i + 1) }),
         color: c,
         shape: "circle"
       })
@@ -1398,7 +1717,7 @@ var MARKER_CATEGORIES = [
   },
   {
     key: "priority",
-    name: "\u4F18\u5148\u7EA7",
+    name: t("marker.cat.priority"),
     markers: PALETTE.map(
       (c, i) => ({
         id: `priority-${i + 1}`,
@@ -1411,9 +1730,9 @@ var MARKER_CATEGORIES = [
   },
   {
     key: "task",
-    name: "\u4EFB\u52A1",
+    name: t("marker.cat.task"),
     markers: [
-      { id: "task-start", label: "\u5F00\u59CB", color: "#007aff", symbol: "\u25B6" },
+      { id: "task-start", label: t("marker.taskStart"), color: "#007aff", symbol: "\u25B6" },
       { id: "task-0", label: "0%", color: "#8e8e93", shape: "circle" },
       {
         id: "task-quarter",
@@ -1436,17 +1755,17 @@ var MARKER_CATEGORIES = [
         shape: "circle",
         progress: 0.75
       },
-      { id: "task-done", label: "\u5B8C\u6210", color: "#34c759", symbol: "\u2713" },
-      { id: "task-paused", label: "\u6682\u505C", color: "#ff9500", symbol: "\u2016" }
+      { id: "task-done", label: t("marker.taskDone"), color: "#34c759", symbol: "\u2713" },
+      { id: "task-paused", label: t("marker.taskPaused"), color: "#ff9500", symbol: "\u2016" }
     ]
   },
   {
     key: "flag",
-    name: "\u65D7\u6807",
+    name: t("marker.cat.flag"),
     markers: PALETTE.map(
       (c, i) => ({
         id: `flag-${i + 1}`,
-        label: `\u65D7\u6807 ${i + 1}`,
+        label: t("marker.labelFlag", { n: String(i + 1) }),
         color: c,
         svgPath: "M0,0 L0,16 L6,11 L9,16 L9,5 L3,0 Z"
       })
@@ -1454,11 +1773,11 @@ var MARKER_CATEGORIES = [
   },
   {
     key: "star",
-    name: "\u661F\u661F",
+    name: t("marker.cat.star"),
     markers: PALETTE.map(
       (c, i) => ({
         id: `star-${i + 1}`,
-        label: `${i + 1} \u661F`,
+        label: t("marker.starCount", { n: String(i + 1) }),
         color: c,
         svgPath: "M8,0 L10,5.5 L16,6 L11.5,10 L13,16 L8,12.5 L3,16 L4.5,10 L0,6 L6,5.5 Z"
       })
@@ -1466,11 +1785,11 @@ var MARKER_CATEGORIES = [
   },
   {
     key: "person",
-    name: "\u4EBA\u50CF",
+    name: t("marker.cat.person"),
     markers: PALETTE.map(
       (c, i) => ({
         id: `people-${i + 1}`,
-        label: `\u4EBA\u5458 ${i + 1}`,
+        label: t("marker.personCount", { n: String(i + 1) }),
         color: c,
         svgPath: "M8,7 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 M2,16 c0,-3.3 2.7,-6 6,-6 s6,2.7 6,6"
       })
@@ -1478,15 +1797,15 @@ var MARKER_CATEGORIES = [
   },
   {
     key: "symbol",
-    name: "\u7B26\u53F7",
+    name: t("marker.cat.symbol"),
     markers: [
-      { id: "symbol-red", label: "\u7EA2", color: "#ff3b30", symbol: "\u2665" },
-      { id: "symbol-orange", label: "\u6A59", color: "#ff9500", symbol: "\u2600" },
-      { id: "symbol-yellow", label: "\u9EC4", color: "#ffcc00", symbol: "\u2602" },
-      { id: "symbol-green", label: "\u7EFF", color: "#34c759", symbol: "\u2663" },
-      { id: "symbol-blue", label: "\u84DD", color: "#007aff", symbol: "\u2666" },
-      { id: "symbol-purple", label: "\u7D2B", color: "#af52de", symbol: "\u2660" },
-      { id: "symbol-gray", label: "\u7070", color: "#8e8e93", symbol: "\u266A" }
+      { id: "symbol-red", label: t("marker.color.red"), color: "#ff3b30", symbol: "\u2665" },
+      { id: "symbol-orange", label: t("marker.color.orange"), color: "#ff9500", symbol: "\u2600" },
+      { id: "symbol-yellow", label: t("marker.color.yellow"), color: "#ffcc00", symbol: "\u2602" },
+      { id: "symbol-green", label: t("marker.color.green"), color: "#34c759", symbol: "\u2663" },
+      { id: "symbol-blue", label: t("marker.color.blue"), color: "#007aff", symbol: "\u2666" },
+      { id: "symbol-purple", label: t("marker.color.purple"), color: "#af52de", symbol: "\u2660" },
+      { id: "symbol-gray", label: t("marker.color.gray"), color: "#8e8e93", symbol: "\u266A" }
     ]
   }
 ];
@@ -1537,44 +1856,58 @@ function hasMarker(topic, id) {
 function renderMarkerIcon(def, size = 14) {
   const wrap = doc.createElement("span");
   wrap.className = "mm-marker-icon";
-  wrap.setCssStyles({ width: size + "px" });
-  wrap.setCssStyles({ height: size + "px" });
+  wrap.setCssStyles({
+    width: size + "px",
+    height: size + "px",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center"
+  });
   wrap.title = def.label;
   if (def.symbol) {
     wrap.textContent = def.symbol;
-    wrap.setCssStyles({ color: def.color });
-    wrap.setCssStyles({ fontSize: Math.round(size * 0.85) + "px" });
-    wrap.setCssStyles({ lineHeight: "1" });
-    wrap.setCssStyles({ display: "inline-flex" });
-    wrap.setCssStyles({ alignItems: "center" });
-    wrap.setCssStyles({ justifyContent: "center" });
-    wrap.setCssStyles({ fontWeight: "600" });
+    wrap.setCssStyles({
+      color: def.color,
+      fontSize: Math.round(size * 0.85) + "px",
+      lineHeight: "1",
+      fontWeight: "600"
+    });
   } else if (def.svgPath) {
     const NS = "http://www.w3.org/2000/svg";
     const svg = doc.createElementNS(NS, "svg");
+    svg.setAttribute("class", "mm-marker-svg");
     svg.setAttribute("viewBox", "0 0 16 16");
     svg.setAttribute("width", String(size));
     svg.setAttribute("height", String(size));
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     const path = doc.createElementNS(NS, "path");
     path.setAttribute("d", def.svgPath);
     path.setAttribute("fill", def.color);
     svg.appendChild(path);
     wrap.appendChild(svg);
   } else if (def.shape === "triangle") {
-    wrap.setCssStyles({ background: def.color });
-    wrap.setCssStyles({ clipPath: "polygon(50% 0, 100% 100%, 0 100%)" });
+    wrap.setCssStyles({
+      background: def.color,
+      clipPath: "polygon(50% 0, 100% 100%, 0 100%)"
+    });
   } else if (def.shape === "square") {
-    wrap.setCssStyles({ background: def.color });
-    wrap.setCssStyles({ borderRadius: "2px" });
+    wrap.setCssStyles({
+      background: def.color,
+      borderRadius: "2px"
+    });
   } else if (def.shape === "diamond") {
-    wrap.setCssStyles({ background: def.color });
-    wrap.setCssStyles({ transform: "rotate(45deg)" });
+    wrap.setCssStyles({
+      background: def.color,
+      transform: "rotate(45deg)"
+    });
   } else {
     const NS = "http://www.w3.org/2000/svg";
     const svg = doc.createElementNS(NS, "svg");
+    svg.setAttribute("class", "mm-marker-svg");
     svg.setAttribute("viewBox", "0 0 16 16");
     svg.setAttribute("width", String(size));
     svg.setAttribute("height", String(size));
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     const bg = doc.createElementNS(NS, "circle");
     bg.setAttribute("cx", "8");
     bg.setAttribute("cy", "8");
@@ -1609,6 +1942,48 @@ function renderMarkerIcon(def, size = 14) {
   return wrap;
 }
 
+// src/icons.ts
+var import_obsidian2 = require("obsidian");
+var TOOLBAR_ICONS = {
+  fitView: "mindmap-fit-view",
+  save: "mindmap-save",
+  addChild: "mindmap-add-child",
+  addSibling: "mindmap-add-sibling",
+  delete: "mindmap-delete",
+  collapse: "mindmap-collapse",
+  more: "mindmap-more",
+  exportSvg: "mindmap-export-svg",
+  exportPng: "mindmap-export-png",
+  minimap: "mindmap-minimap",
+  panel: "mindmap-panel"
+};
+var ICON_SVGS = {
+  [TOOLBAR_ICONS.fitView]: `<g transform="scale(4.1666667)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></g>`,
+  [TOOLBAR_ICONS.save]: `<g transform="scale(4.1666667)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></g>`,
+  [TOOLBAR_ICONS.addChild]: `<g transform="scale(4.1666667)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></g>`,
+  [TOOLBAR_ICONS.addSibling]: `<g transform="scale(4.1666667)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></g>`,
+  [TOOLBAR_ICONS.delete]: `<g transform="scale(4.1666667)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></g>`,
+  [TOOLBAR_ICONS.collapse]: `<g transform="scale(4.1666667)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,14 10,14 10,20"/><polyline points="20,10 14,10 14,4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></g>`,
+  [TOOLBAR_ICONS.more]: `<g transform="scale(4.1666667)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></g>`,
+  [TOOLBAR_ICONS.exportSvg]: `<g transform="scale(4.1666667)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="9" y1="15" x2="15" y2="15"/></g>`,
+  [TOOLBAR_ICONS.exportPng]: `<g transform="scale(4.1666667)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></g>`,
+  [TOOLBAR_ICONS.minimap]: `<g transform="scale(4.1666667)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="4" height="4"/><rect x="13" y="7" width="4" height="4"/><rect x="7" y="13" width="4" height="4"/><rect x="13" y="13" width="4" height="4"/></g>`,
+  [TOOLBAR_ICONS.panel]: `<g transform="scale(4.1666667)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></g>`
+};
+function registerToolbarIcons() {
+  (0, import_obsidian2.addIcon)(TOOLBAR_ICONS.fitView, ICON_SVGS[TOOLBAR_ICONS.fitView]);
+  (0, import_obsidian2.addIcon)(TOOLBAR_ICONS.save, ICON_SVGS[TOOLBAR_ICONS.save]);
+  (0, import_obsidian2.addIcon)(TOOLBAR_ICONS.addChild, ICON_SVGS[TOOLBAR_ICONS.addChild]);
+  (0, import_obsidian2.addIcon)(TOOLBAR_ICONS.addSibling, ICON_SVGS[TOOLBAR_ICONS.addSibling]);
+  (0, import_obsidian2.addIcon)(TOOLBAR_ICONS.delete, ICON_SVGS[TOOLBAR_ICONS.delete]);
+  (0, import_obsidian2.addIcon)(TOOLBAR_ICONS.collapse, ICON_SVGS[TOOLBAR_ICONS.collapse]);
+  (0, import_obsidian2.addIcon)(TOOLBAR_ICONS.more, ICON_SVGS[TOOLBAR_ICONS.more]);
+  (0, import_obsidian2.addIcon)(TOOLBAR_ICONS.exportSvg, ICON_SVGS[TOOLBAR_ICONS.exportSvg]);
+  (0, import_obsidian2.addIcon)(TOOLBAR_ICONS.exportPng, ICON_SVGS[TOOLBAR_ICONS.exportPng]);
+  (0, import_obsidian2.addIcon)(TOOLBAR_ICONS.minimap, ICON_SVGS[TOOLBAR_ICONS.minimap]);
+  (0, import_obsidian2.addIcon)(TOOLBAR_ICONS.panel, ICON_SVGS[TOOLBAR_ICONS.panel]);
+}
+
 // src/MindMapView.ts
 var pluginInstance = null;
 function setPluginInstance(plugin) {
@@ -1629,6 +2004,7 @@ function applyDefaultThemeToRoot(root, theme, compact) {
 var NODE_W = 170;
 var MIN_NODE_W = 60;
 var MAX_NODE_W = 800;
+var TEXT_MAX_W = 360;
 var NODE_H = 42;
 var NODE_H_COMPACT = 32;
 var H_GAP = 70;
@@ -1644,42 +2020,42 @@ var MINIMAP_W = 200;
 var MINIMAP_H = 130;
 var LAYOUTS = {
   balance: {
-    label: "\u5E73\u8861\u56FE",
+    label: t("layout.balance"),
     structureClass: "org.xmind.ui.map.balance",
     thumb: "balance"
   },
   right: {
-    label: "\u5411\u53F3\u56FE",
+    label: t("layout.right"),
     structureClass: "org.xmind.ui.map.right",
     thumb: "right"
   },
   left: {
-    label: "\u5411\u5DE6\u56FE",
+    label: t("layout.left"),
     structureClass: "org.xmind.ui.map.left",
     thumb: "left"
   },
   orgChart: {
-    label: "\u7EC4\u7EC7\u7ED3\u6784\u56FE",
+    label: t("layout.orgChart"),
     structureClass: "org.xmind.ui.orgChart.down",
     thumb: "orgChart"
   },
   tree: {
-    label: "\u6811\u5F62\u56FE",
+    label: t("layout.tree"),
     structureClass: "org.xmind.ui.tree.right",
     thumb: "tree"
   },
   logic: {
-    label: "\u903B\u8F91\u56FE",
+    label: t("layout.logic"),
     structureClass: "org.xmind.ui.logic.right",
     thumb: "logic"
   },
   timeline: {
-    label: "\u65F6\u95F4\u8F74",
+    label: t("layout.timeline"),
     structureClass: "org.xmind.ui.timeline",
     thumb: "timeline"
   },
   fishbone: {
-    label: "\u9C7C\u9AA8\u56FE",
+    label: t("layout.fishbone"),
     structureClass: "org.xmind.ui.fishbone.right",
     thumb: "fishbone"
   }
@@ -1727,19 +2103,19 @@ var NODE_PALETTE = [
 ];
 var STICKER_GROUPS = [
   {
-    name: "\u5DE5\u4F5C",
+    name: t("sticker.work"),
     items: ["\u{1F4A1}", "\u2705", "\u{1F4CC}", "\u{1F4C5}", "\u{1F4CA}", "\u{1F4E7}", "\u{1F525}", "\u2B50", "\u{1F3AF}", "\u{1F680}"]
   },
   {
-    name: "\u751F\u6D3B",
+    name: t("sticker.life"),
     items: ["\u2764\uFE0F", "\u{1F3E0}", "\u{1F34E}", "\u2615", "\u{1F389}", "\u{1F308}", "\u{1F31F}", "\u{1F4A4}", "\u{1F6D2}", "\u{1F431}"]
   },
   {
-    name: "\u81EA\u7136",
+    name: t("sticker.nature"),
     items: ["\u{1F31E}", "\u{1F319}", "\u{1F333}", "\u{1F338}", "\u{1F30A}", "\u26A1", "\u2744\uFE0F", "\u{1F33F}", "\u{1F525}", "\u{1F340}"]
   },
   {
-    name: "\u7B26\u53F7",
+    name: t("sticker.symbol"),
     items: ["\u2757", "\u2753", "\u2795", "\u2796", "\u2714\uFE0F", "\u2716\uFE0F", "\u26A0\uFE0F", "\u{1F4AC}", "\u{1F514}", "\u{1F4CD}"]
   }
 ];
@@ -1753,8 +2129,8 @@ function svgEl(tag, attrs = {}) {
   for (const k in attrs) el.setAttribute(k, attrs[k]);
   return el;
 }
-function lerp(a, b, t) {
-  return a + (b - a) * t;
+function lerp(a, b, t2) {
+  return a + (b - a) * t2;
 }
 function isDarkHex(hex) {
   const m = hex.replace("#", "");
@@ -1795,7 +2171,7 @@ function toggleSticker(topic, emoji) {
   else cur.push(emoji);
   setStickers(topic, cur);
 }
-var _MindMapView = class _MindMapView extends import_obsidian.FileView {
+var _MindMapView = class _MindMapView extends import_obsidian3.FileView {
   constructor(leaf) {
     super(leaf);
     __publicField(this, "sheets", []);
@@ -1838,8 +2214,11 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     __publicField(this, "toolbarMoreMenu");
     /** 所有可溢出的操作项定义（含主要操作 + 次要操作） */
     __publicField(this, "allToolbarActions", []);
+    // ---------- 平移 / 缩放 ----------
     __publicField(this, "onMouseDown", (e) => {
-      if (!this.isTargetOnRoot(e.target)) return;
+      const tEl = e.target;
+      if (tEl && tEl.closest(".mm-node")) return;
+      if (e.button !== 0 && e.button !== 2) return;
       e.preventDefault();
       const startX = e.clientX;
       const startY = e.clientY;
@@ -1858,8 +2237,9 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       window.addEventListener("mouseup", up);
     });
     __publicField(this, "onTouchStart", (e) => {
+      var _a3, _b3;
       if (e.touches.length === 1) {
-        if (!this.isTargetOnRoot(e.target)) return;
+        if ((_b3 = (_a3 = e.target) == null ? void 0 : _a3.closest) == null ? void 0 : _b3.call(_a3, ".mm-node")) return;
         e.preventDefault();
         const touch = e.touches[0];
         const startX = touch.clientX;
@@ -2022,21 +2402,10 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   getViewType() {
     return VIEW_TYPE_MINDMAP;
   }
-  /** 用 Obsidian 官方 getIcon() 选出一个确定存在的图标名；都不存在则回退到内置的 settings 图标。 */
-  resolveIcon(candidates) {
-    for (const name of candidates) {
-      if ((0, import_obsidian.getIcon)(name)) return name;
-    }
-    return "settings";
-  }
-  /** 为按钮设置 Obsidian 内置 lucide 图标（官方 setIcon 渲染，自动套用主题色） */
-  applyIcon(btn, lucideName) {
-    (0, import_obsidian.setIcon)(btn, lucideName);
-  }
   /** 创建一个带图标的工具栏按钮 */
-  createIconBtn(parent, lucideName, title, onClick, cls) {
+  createIconBtn(parent, iconName, title, onClick, cls) {
     const btn = parent.createEl("button", { cls });
-    this.applyIcon(btn, lucideName);
+    (0, import_obsidian3.setIcon)(btn, TOOLBAR_ICONS[iconName]);
     btn.setAttribute("aria-label", title);
     btn.addEventListener("click", onClick);
     return btn;
@@ -2045,27 +2414,27 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const toolbar = parent.createDiv({ cls: "mm-toolbar" });
     this.toolbarPrimaryEl = toolbar.createDiv({ cls: "mm-toolbar-primary" });
     this.allToolbarActions = [
-      { id: "fitView", lucideName: this.resolveIcon(_MindMapView.ICONS.fitView), title: "\u9002\u5E94\u89C6\u56FE", onClick: () => this.fitView() },
-      { id: "save", lucideName: this.resolveIcon(_MindMapView.ICONS.save), title: "\u4FDD\u5B58", onClick: () => this.save() },
-      { id: "addChild", lucideName: this.resolveIcon(_MindMapView.ICONS.addChild), title: "\u5B50\u4E3B\u9898", onClick: () => {
-        var _a2, _b2, _c;
-        return this.addChildNode((_c = (_b2 = this.selectedId) != null ? _b2 : (_a2 = this.root) == null ? void 0 : _a2.id) != null ? _c : "");
+      { id: "fitView", iconName: "fitView", title: t("toolbar.fitView"), onClick: () => this.fitView() },
+      { id: "save", iconName: "save", title: t("toolbar.save"), onClick: () => this.save() },
+      { id: "addChild", iconName: "addChild", title: t("toolbar.addChild"), onClick: () => {
+        var _a3, _b3, _c;
+        return this.addChildNode((_c = (_b3 = this.selectedId) != null ? _b3 : (_a3 = this.root) == null ? void 0 : _a3.id) != null ? _c : "");
       } },
-      { id: "addSibling", lucideName: this.resolveIcon(_MindMapView.ICONS.addSibling), title: "\u540C\u7EA7\u4E3B\u9898", onClick: () => {
+      { id: "addSibling", iconName: "addSibling", title: t("toolbar.addSibling"), onClick: () => {
         if (this.selectedId) this.addSiblingNode(this.selectedId);
       } },
-      { id: "delete", lucideName: this.resolveIcon(_MindMapView.ICONS.delete), title: "\u5220\u9664", onClick: () => {
+      { id: "delete", iconName: "delete", title: t("toolbar.delete"), onClick: () => {
         if (this.selectedId) this.deleteNode(this.selectedId);
       } },
-      { id: "collapse", lucideName: this.resolveIcon(_MindMapView.ICONS.collapse), title: "\u6298\u53E0/\u5C55\u5F00", onClick: () => {
+      { id: "collapse", iconName: "collapse", title: t("toolbar.collapse"), onClick: () => {
         if (this.selectedId) this.toggleNode(this.selectedId);
       } },
-      { id: "exportSvg", lucideName: this.resolveIcon(_MindMapView.ICONS.exportSvg), title: "\u5BFC\u51FA SVG", onClick: () => this.exportSVG() },
-      { id: "exportPng", lucideName: this.resolveIcon(_MindMapView.ICONS.exportPng), title: "\u5BFC\u51FA PNG", onClick: () => this.exportPNG() },
+      { id: "exportSvg", iconName: "exportSvg", title: t("toolbar.exportSvg"), onClick: () => this.exportSVG() },
+      { id: "exportPng", iconName: "exportPng", title: t("toolbar.exportPng"), onClick: () => this.exportPNG() },
       {
         id: "minimap",
-        lucideName: this.resolveIcon(_MindMapView.ICONS.minimap),
-        title: "\u7F29\u7565\u56FE",
+        iconName: "minimap",
+        title: t("toolbar.minimap"),
         onClick: () => {
           this.showMinimap = !this.showMinimap;
           this.minimap.setCssStyles({ display: this.showMinimap ? "" : "none" });
@@ -2075,8 +2444,8 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       },
       {
         id: "panel",
-        lucideName: this.resolveIcon(_MindMapView.ICONS.panel),
-        title: "\u6253\u5F00\u9762\u677F",
+        iconName: "panel",
+        title: t("toolbar.panel"),
         onClick: () => {
           this.toggleSidePanel();
           this.updateToolbarState();
@@ -2086,7 +2455,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     for (const action of this.allToolbarActions) {
       action.inlineBtn = this.createIconBtn(
         this.toolbarPrimaryEl,
-        action.lucideName,
+        action.iconName,
         action.title,
         action.onClick,
         "mm-tb-action"
@@ -2097,15 +2466,15 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     this.toolbarMoreWrap = secondary.createDiv({ cls: "mm-toolbar-more" });
     this.toolbarMoreBtn = this.createIconBtn(
       this.toolbarMoreWrap,
-      this.resolveIcon(_MindMapView.ICONS.more),
-      "\u66F4\u591A",
+      "more",
+      t("toolbar.more"),
       () => this.toggleMoreDropdown(),
       "mm-tb-more-btn"
     );
     this.toolbarMoreMenu = this.toolbarMoreWrap.createDiv({ cls: "mm-toolbar-more-menu" });
     for (const action of this.allToolbarActions) {
       action.menuItem = this.toolbarMoreMenu.createEl("button", { cls: "mm-tb-menu-item" });
-      (0, import_obsidian.setIcon)(action.menuItem, action.lucideName);
+      (0, import_obsidian3.setIcon)(action.menuItem, TOOLBAR_ICONS[action.iconName]);
       const labelSpan = action.menuItem.createSpan();
       labelSpan.textContent = action.title;
       action.menuItem.setAttribute("aria-label", action.title);
@@ -2125,7 +2494,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     this.moreMenuCloseHandler = closeMore;
     toolbar.createEl("span", {
       cls: "mm-hint",
-      text: "\u9009\u4E2D\u8282\u70B9 \xB7 Tab \u52A0\u5B50 / Enter \u540C\u7EA7 / Delete \u5220\u9664 / \u7A7A\u683C \u6298\u53E0 / \u53CC\u51FB\u7F16\u8F91"
+      text: t("toolbar.hint")
     });
     this.startOverflowObserver();
   }
@@ -2136,8 +2505,8 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     this.toolbarMoreBtn.classList.toggle("is-active", next);
   }
   closeMoreDropdown() {
-    var _a2;
-    if ((_a2 = this.toolbarMoreWrap) == null ? void 0 : _a2.classList.contains("is-open")) {
+    var _a3;
+    if ((_a3 = this.toolbarMoreWrap) == null ? void 0 : _a3.classList.contains("is-open")) {
       this.toggleMoreDropdown(false);
     }
   }
@@ -2198,8 +2567,8 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   }
   /** 停止溢出观察器 */
   stopOverflowObserver() {
-    var _a2;
-    (_a2 = this.overflowResizeObserver) == null ? void 0 : _a2.disconnect();
+    var _a3;
+    (_a3 = this.overflowResizeObserver) == null ? void 0 : _a3.disconnect();
     this.overflowResizeObserver = void 0;
   }
   updateToolbarState() {
@@ -2211,19 +2580,19 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     }
   }
   getDisplayText() {
-    const name = this.file ? this.file.name : "\u601D\u7EF4\u5BFC\u56FE";
+    const name = this.file ? this.file.name : t("view.fallbackTitle");
     return this.dirty ? `${name} \u2022` : name;
   }
   getIcon() {
-    return "git-graph";
+    return "graph";
   }
   async onOpen() {
-    var _a2;
+    var _a3;
     this.contentEl.empty();
     this.contentEl.addClass("mm-view");
     this.contentEl.toggleClass("mm-fullscreen", this.canvasStyle.fullscreen);
-    this.showMinimap = (_a2 = pluginInstance == null ? void 0 : pluginInstance.settings.showMinimap) != null ? _a2 : true;
-    this.isMobile = import_obsidian.Platform.isMobile;
+    this.showMinimap = (_a3 = pluginInstance == null ? void 0 : pluginInstance.settings.showMinimap) != null ? _a3 : true;
+    this.isMobile = import_obsidian3.Platform.isMobile;
     this.contentEl.toggleClass("is-mobile", this.isMobile);
     this.createToolbar(this.contentEl);
     const main = this.contentEl.createDiv({ cls: "mm-main" });
@@ -2246,6 +2615,10 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     this.svg.addEventListener("wheel", this.onWheel, { passive: false });
     this.svg.addEventListener("mousedown", this.onMouseDown);
     this.svg.addEventListener("touchstart", this.onTouchStart, { passive: false });
+    this.svg.addEventListener("contextmenu", (e) => {
+      var _a4, _b3;
+      if (!((_b3 = (_a4 = e.target) == null ? void 0 : _a4.closest) == null ? void 0 : _b3.call(_a4, ".mm-node"))) e.preventDefault();
+    });
     this.sidePanel = main.createDiv({ cls: "mm-side-panel" });
     this.sidePanel.setCssStyles({ width: SIDE_PANEL_W + "px" });
     if (this.isMobile) {
@@ -2256,18 +2629,18 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const tabs = this.sidePanel.createDiv({ cls: "mm-side-tabs" });
     const tabFormat = tabs.createDiv({
       cls: "mm-side-tab is-active",
-      text: "\u753B\u5E03"
+      text: t("tab.format")
     });
-    const tabMarkers = tabs.createDiv({ cls: "mm-side-tab", text: "\u6807\u8BB0" });
-    const tabStickers = tabs.createDiv({ cls: "mm-side-tab", text: "\u8D34\u7EB8" });
+    const tabMarkers = tabs.createDiv({ cls: "mm-side-tab", text: t("tab.markers") });
+    const tabStickers = tabs.createDiv({ cls: "mm-side-tab", text: t("tab.stickers") });
     tabFormat.addEventListener("click", () => this.switchTab("format"));
     tabMarkers.addEventListener("click", () => this.switchTab("markers"));
     tabStickers.addEventListener("click", () => this.switchTab("stickers"));
     this.sideContent = this.sidePanel.createDiv({ cls: "mm-side-content" });
     this.registerDomEvent(document, "keydown", (e) => {
       if (this.app.workspace.getActiveViewOfType(_MindMapView) !== this) return;
-      const t = e.target;
-      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
+      const t2 = e.target;
+      if (t2 && (t2.tagName === "INPUT" || t2.tagName === "TEXTAREA")) return;
       if (!this.selectedId || !this.root) return;
       if (e.key === "Tab") {
         e.preventDefault();
@@ -2340,13 +2713,13 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     return this.dirty;
   }
   refreshHeader() {
-    var _a2;
+    var _a3;
     const leaf = this.leaf;
-    (_a2 = leaf.updateHeader) == null ? void 0 : _a2.call(leaf);
+    (_a3 = leaf.updateHeader) == null ? void 0 : _a3.call(leaf);
   }
   // ---------- 加载 / 序列化 ----------
   async loadMap() {
-    var _a2, _b2, _c, _d, _e;
+    var _a3, _b3, _c, _d, _e;
     this.overlay.empty();
     if (!this.file) {
       this.renderEmpty();
@@ -2355,7 +2728,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     try {
       const data = await this.app.vault.readBinary(this.file);
       this.sheets = await parseXMind(data);
-      this.root = (_b2 = (_a2 = this.sheets[0]) == null ? void 0 : _a2.rootTopic) != null ? _b2 : null;
+      this.root = (_b3 = (_a3 = this.sheets[0]) == null ? void 0 : _a3.rootTopic) != null ? _b3 : null;
       const structCls = (_c = this.root) == null ? void 0 : _c["structure-class"];
       this.currentLayout = (_d = pluginInstance == null ? void 0 : pluginInstance.settings.defaultLayout) != null ? _d : DEFAULT_LAYOUT;
       if (structCls) {
@@ -2394,29 +2767,29 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       this.render();
       this.renderSidePanel();
     } catch (e) {
-      new import_obsidian.Notice("\u65E0\u6CD5\u89E3\u6790\u601D\u7EF4\u5BFC\u56FE\uFF1A" + e.message);
+      new import_obsidian3.Notice(t("notice.parseFail", { msg: e.message }));
       this.renderEmpty();
     }
   }
   renderEmpty() {
     while (this.g.firstChild) this.g.removeChild(this.g.firstChild);
     this.overlay.empty();
-    const t = svgEl("text", {
+    const txt = svgEl("text", {
       x: "20",
       y: "40",
       class: "mm-empty"
     });
-    t.textContent = "\u6CA1\u6709\u6253\u5F00\u7684\u601D\u7EF4\u5BFC\u56FE\u6587\u4EF6\u3002\u4F7F\u7528\u547D\u4EE4\u300C\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE (.xmind)\u300D\u5F00\u59CB\u3002";
-    this.g.appendChild(t);
+    txt.textContent = t("view.empty");
+    this.g.appendChild(txt);
   }
   // ---------- 布局算法 ----------
-  nodeHeight(t) {
-    const kids = t.collapsed ? [] : attachedChildren(t);
-    if (kids.length === 0) return this.nh;
+  nodeHeight(t2) {
+    const kids = t2.collapsed ? [] : attachedChildren(t2);
+    if (kids.length === 0) return this.nodeRealHeight(t2);
     let h = 0;
     for (const k of kids) h += this.nodeHeight(k) + this.vgap;
     h -= this.vgap;
-    return Math.max(this.nh, h);
+    return Math.max(this.nodeRealHeight(t2), h);
   }
   subtreeHeight(kids) {
     if (kids.length === 0) return this.nh;
@@ -2429,12 +2802,12 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   depthOf(n) {
     if (!this.root || n.id === this.root.id) return 0;
     let found = -1;
-    const walk = (t, depth) => {
-      if (t.id === n.id) {
+    const walk = (t2, depth) => {
+      if (t2.id === n.id) {
         found = depth;
         return true;
       }
-      for (const k of attachedChildren(t)) {
+      for (const k of attachedChildren(t2)) {
         if (walk(k, depth + 1)) return true;
       }
       return false;
@@ -2464,16 +2837,62 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     if (depth === 2) return this.canvasStyle.compact ? 11 : 12;
     return this.canvasStyle.compact ? 10 : 11;
   }
-  // 节点的实际宽度：优先用用户拖拽设定的 _width，否则按深度回退到层级默认盒宽
+  // 判断字符是否为「宽字符」（CJK / 全角等）。宽字符近似占 1em，其余约 0.55em。
+  isWideChar(ch3) {
+    var _a3;
+    const c = (_a3 = ch3.codePointAt(0)) != null ? _a3 : 0;
+    return c >= 4352 && c <= 4447 || // Hangul Jamo
+    c >= 11904 && c <= 12350 || // CJK 部首 / 符号
+    c >= 12353 && c <= 13311 || // 平假名 / 片假名 / CJK 符号
+    c >= 13312 && c <= 19903 || // CJK 扩展 A
+    c >= 19968 && c <= 40959 || // CJK 基本区
+    c >= 40960 && c <= 42191 || // 彝文
+    c >= 44032 && c <= 55203 || // Hangul 音节
+    c >= 63744 && c <= 64255 || // CJK 兼容
+    c >= 65072 && c <= 65103 || // CJK 兼容形式
+    c >= 65280 && c <= 65376 || // 全角形式
+    c >= 65504 && c <= 65510 || c >= 131072 && c <= 262141;
+  }
+  // 估算一段文本在给定字号下的视觉宽度（px）
+  textVisualWidth(title, fontSize) {
+    let w = 0;
+    for (const ch3 of title) w += this.isWideChar(ch3) ? fontSize : fontSize * 0.55;
+    return w;
+  }
+  // 节点实际高度：随文本内容自适应（换行时增高），最低不低于层级默认盒高；
+  // 同时计入贴纸 / 标记行的额外高度。布局与渲染均以此为准，避免文字被裁切或节点重叠。
+  nodeRealHeight(n) {
+    var _a3;
+    const depth = this.depthOf(n);
+    const base = this.boxHeightOf(depth);
+    const title = (_a3 = n.title) != null ? _a3 : "";
+    if (!title) return base;
+    const fs = this.fontSizeOf(depth);
+    const w = Math.max(1, this.nodeWidth(n) - 16);
+    const textW = this.textVisualWidth(title, fs);
+    const lines = Math.max(1, Math.ceil(textW / w));
+    const lineH = fs * 1.25;
+    let h = lines * lineH + 8;
+    if (getStickers(n).length) h += 18;
+    if (getMarkerIds(n).length) h += 16;
+    return Math.round(Math.max(base, h + 4));
+  }
+  // 节点的实际宽度：优先用用户拖拽设定的 _width；否则按深度回退到层级默认盒宽，
+  // 并随文本长度自适应变宽（不超过 TEXT_MAX_W），保证文字完整可见。
   nodeWidth(n) {
+    var _a3;
     const w = n._width;
     const num = typeof w === "number" ? w : typeof w === "string" ? parseFloat(w) : NaN;
     if (isFinite(num) && num >= MIN_NODE_W) return num;
-    return this.boxWidthOf(this.depthOf(n));
+    const depth = this.depthOf(n);
+    const base = this.boxWidthOf(depth);
+    const fs = this.fontSizeOf(depth);
+    const needed = this.textVisualWidth((_a3 = n.title) != null ? _a3 : "", fs) + 16;
+    return Math.round(Math.min(TEXT_MAX_W, Math.max(base, needed)));
   }
-  // 节点盒子（单格）渲染高度，按层级深度缩放
+  // 节点盒子（单格）渲染高度，按内容自适应（供渲染 / 输入框使用）
   nodeBoxHeight(n) {
-    return this.boxHeightOf(this.depthOf(n));
+    return this.nodeRealHeight(n);
   }
   place(node, x, top, side) {
     const h = this.nodeHeight(node);
@@ -2533,9 +2952,9 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   applyDrags() {
     if (!this.root) return;
     const walk = (node, ax, ay) => {
-      var _a2, _b2;
-      const ox = (_a2 = node._dx) != null ? _a2 : 0;
-      const oy = (_b2 = node._dy) != null ? _b2 : 0;
+      var _a3, _b3;
+      const ox = (_a3 = node._dx) != null ? _a3 : 0;
+      const oy = (_b3 = node._dy) != null ? _b3 : 0;
       const nx = ax + ox;
       const ny = ay + oy;
       const p = this.positions.get(node.id);
@@ -2610,14 +3029,14 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     };
     const placeOrg = (n, cx, topY) => {
       const kids = n.collapsed ? [] : attachedChildren(n);
-      const cy = topY + this.nh / 2;
+      const cy = topY + this.nodeBoxHeight(n) / 2;
       if (n.id) this.positions.set(n.id, { x: cx, y: cy, side: 0 });
       if (kids.length === 0) return;
       let totalW = 0;
       for (const k of kids) totalW += subtreeWidth(k) + ORG_H_GAP;
       totalW -= ORG_H_GAP;
       let curX = cx - totalW / 2;
-      const childTopY = cy + this.nh / 2 + this.orgVgap;
+      const childTopY = cy + this.nodeBoxHeight(n) / 2 + this.orgVgap;
       for (const k of kids) {
         const w = subtreeWidth(k);
         const childCx = curX + w / 2;
@@ -2694,10 +3113,10 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       if (k.id) this.positions.set(k.id, { x: kx, y: 0, side: 1 });
       cursor += kw + this.hgap;
       const sub = k.collapsed ? [] : attachedChildren(k);
-      let subY = this.nh + this.vgap;
+      let subY = this.nodeBoxHeight(k) + this.vgap;
       for (const s of sub) {
         if (s.id) this.positions.set(s.id, { x: kx, y: subY, side: 2 });
-        subY += this.nh + this.vgap;
+        subY += this.nodeBoxHeight(s) + this.vgap;
       }
     }
   }
@@ -2721,9 +3140,9 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       const catY = sign * (90 + rank * 8);
       const sub = bone.collapsed ? [] : attachedChildren(bone);
       for (let j = 0; j < sub.length; j++) {
-        const t = (j + 1) / (sub.length + 1);
-        const cx = lerp(spineX, catX, t);
-        const cy = lerp(0, catY, t) + sign * 22;
+        const t2 = (j + 1) / (sub.length + 1);
+        const cx = lerp(spineX, catX, t2);
+        const cy = lerp(0, catY, t2) + sign * 22;
         if (sub[j].id) this.positions.set(sub[j].id, { x: cx, y: cy, side: 1 });
       }
       if (bone.id) this.positions.set(bone.id, { x: catX, y: catY, side: 3 });
@@ -2735,10 +3154,11 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     for (const [id, p] of this.positions) {
       const node = this.root ? findTopic(this.root, id) : null;
       const wHalf = (node ? this.nodeWidth(node) : this.nw) / 2;
+      const hHalf = (node ? this.nodeBoxHeight(node) : this.nh) / 2;
       minX = Math.min(minX, p.x - wHalf);
       maxX = Math.max(maxX, p.x + wHalf);
-      minY = Math.min(minY, p.y - this.nh / 2);
-      maxY = Math.max(maxY, p.y + this.nh / 2);
+      minY = Math.min(minY, p.y - hHalf);
+      maxY = Math.max(maxY, p.y + hHalf);
     }
     const w = Math.max(1, maxX - minX);
     const h = Math.max(1, maxY - minY);
@@ -2802,7 +3222,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
         if (!cp) return;
         const color = this.edgeColor(node, i);
         const path = svgEl("path", {
-          d: edgePath(pos, cp, this.nodeWidth(node), this.nodeWidth(k), this.nh, this.currentLayout),
+          d: edgePath(pos, cp, this.nodeWidth(node), this.nodeWidth(k), this.nodeBoxHeight(node), this.nodeBoxHeight(k), this.currentLayout),
           class: "mm-edge"
         });
         if (color) path.setCssStyles({ stroke: color });
@@ -2832,23 +3252,23 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   }
   // 向上查找最近的祖先 _color（含自身）
   resolveColor(node) {
-    var _a2, _b2;
+    var _a3, _b3;
     let cur = node;
     while (cur) {
       const c = cur._color;
       if (typeof c === "string" && c) {
         return { fill: c, text: isDarkHex(c) ? "#ffffff" : "#1e1e1e" };
       }
-      if (cur.id === ((_a2 = this.root) == null ? void 0 : _a2.id)) break;
-      cur = this.root ? (_b2 = findParent(this.root, cur.id)) != null ? _b2 : void 0 : void 0;
+      if (cur.id === ((_a3 = this.root) == null ? void 0 : _a3.id)) break;
+      cur = this.root ? (_b3 = findParent(this.root, cur.id)) != null ? _b3 : void 0 : void 0;
     }
     return null;
   }
   drawNode(id, pos) {
-    var _a2, _b2;
+    var _a3, _b3;
     const node = this.root ? findTopic(this.root, id) : null;
     if (!node) return;
-    const isRoot = node.id === ((_a2 = this.root) == null ? void 0 : _a2.id);
+    const isRoot = node.id === ((_a3 = this.root) == null ? void 0 : _a3.id);
     const isSelected = id === this.selectedId;
     const isCollapsed = !!node.collapsed;
     const hasChildren = attachedChildren(node).length > 0;
@@ -2893,12 +3313,12 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     }
     const text = newEl("div");
     text.className = "mm-node-text";
-    text.textContent = (_b2 = node.title) != null ? _b2 : "(\u7A7A)";
+    text.textContent = (_b3 = node.title) != null ? _b3 : t("default.emptyText");
     div.appendChild(text);
     const handleSide = pos.side < 0 ? "left" : "right";
     const handle = newEl("div");
     handle.className = "mm-resize-handle " + handleSide;
-    handle.title = "\u62D6\u62FD\u8C03\u6574\u8282\u70B9\u5BBD\u5EA6";
+    handle.title = t("node.resizeHint");
     handle.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -2942,7 +3362,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   }
   // 鼠标拖拽调整单个节点宽度：以"靠近父节点那条边"为固定锚边，只有远侧移动；松手写回 topic._width 并重排+保存
   startResize(e, id, pos, handleSide) {
-    var _a2;
+    var _a3;
     const node = this.root ? findTopic(this.root, id) : null;
     const div = this.nodeEls.get(id);
     if (!node || !div) return;
@@ -2950,7 +3370,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const startW = this.nodeWidth(node);
     const startX = e.clientX;
     const self = this;
-    const parent = id === ((_a2 = this.root) == null ? void 0 : _a2.id) || pos.side === 0 ? null : this.root ? findParent(this.root, id) : null;
+    const parent = id === ((_a3 = this.root) == null ? void 0 : _a3.id) || pos.side === 0 ? null : this.root ? findParent(this.root, id) : null;
     let anchorX = 0;
     if (parent) {
       const pPos = this.positions.get(parent.id);
@@ -2991,14 +3411,14 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   }
   // 拖拽移动节点：拖动时连同其子树整体平移（实时预览），松手写回 topic._dx/_dy 并保存
   startDrag(e, id) {
-    var _a2, _b2;
+    var _a3, _b3;
     if (!this.root || this.editingId === id) return;
     const node = findTopic(this.root, id);
     if (!node) return;
     const startX = e.clientX;
     const startY = e.clientY;
-    const startDx = (_a2 = node._dx) != null ? _a2 : 0;
-    const startDy = (_b2 = node._dy) != null ? _b2 : 0;
+    const startDx = (_a3 = node._dx) != null ? _a3 : 0;
+    const startDy = (_b3 = node._dy) != null ? _b3 : 0;
     const base = /* @__PURE__ */ new Map();
     for (const [k, p] of this.positions) base.set(k, { x: p.x, y: p.y, side: p.side });
     const subIds = this.subtreeIds(id);
@@ -3057,22 +3477,22 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   showContextMenu(e, id) {
     const node = this.root ? findTopic(this.root, id) : null;
     if (!node) return;
-    const menu = new import_obsidian.Menu();
+    const menu = new import_obsidian3.Menu();
     menu.addItem(
-      (i) => i.setTitle("\u6DFB\u52A0\u5B50\u4E3B\u9898").onClick(() => this.addChildNode(id))
+      (i) => i.setTitle(t("ctx.addChild")).onClick(() => this.addChildNode(id))
     );
     menu.addItem(
-      (i) => i.setTitle("\u6DFB\u52A0\u540C\u7EA7\u4E3B\u9898").onClick(() => this.addSiblingNode(id))
+      (i) => i.setTitle(t("ctx.addSibling")).onClick(() => this.addSiblingNode(id))
     );
     menu.addItem(
-      (i) => i.setTitle("\u7F16\u8F91\u6587\u672C").onClick(() => this.startEdit(id))
+      (i) => i.setTitle(t("ctx.editText")).onClick(() => this.startEdit(id))
     );
     menu.addItem(
-      (i) => i.setTitle(node.collapsed ? "\u5C55\u5F00" : "\u6298\u53E0").onClick(() => this.toggleNode(id))
+      (i) => i.setTitle(node.collapsed ? t("ctx.expand") : t("ctx.collapse")).onClick(() => this.toggleNode(id))
     );
-    menu.addItem((i) => i.setTitle("\u5220\u9664").onClick(() => this.deleteNode(id)));
+    menu.addItem((i) => i.setTitle(t("ctx.delete")).onClick(() => this.deleteNode(id)));
     menu.addItem(
-      (i) => i.setTitle("\u91CD\u7F6E\u5BBD\u5EA6").onClick(() => {
+      (i) => i.setTitle(t("ctx.resetWidth")).onClick(() => {
         delete node._width;
         this.rebuild();
       })
@@ -3083,7 +3503,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     if (!this.root) return;
     const parent = findTopic(this.root, id);
     if (!parent) return;
-    const child = addChild(parent, "\u65B0\u4E3B\u9898");
+    const child = addChild(parent);
     if (parent === this.root && this.canvasStyle.theme === "pastel") {
       const idx = attachedChildren(this.root).indexOf(child);
       child._color = NODE_PALETTE[idx % NODE_PALETTE.length];
@@ -3094,12 +3514,12 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   addSiblingNode(id) {
     if (!this.root) return;
     if (id === this.root.id) {
-      new import_obsidian.Notice("\u6839\u4E3B\u9898\u6CA1\u6709\u540C\u7EA7\u4E3B\u9898");
+      new import_obsidian3.Notice(t("notice.rootNoSibling"));
       return;
     }
     const parent = findParent(this.root, id);
     if (!parent) return;
-    const child = addChild(parent, "\u65B0\u4E3B\u9898");
+    const child = addChild(parent);
     if (parent === this.root && this.canvasStyle.theme === "pastel") {
       const idx = attachedChildren(this.root).indexOf(child);
       child._color = NODE_PALETTE[idx % NODE_PALETTE.length];
@@ -3109,7 +3529,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   deleteNode(id) {
     if (!this.root) return;
     if (id === this.root.id) {
-      new import_obsidian.Notice("\u4E0D\u80FD\u5220\u9664\u6839\u4E3B\u9898");
+      new import_obsidian3.Notice(t("notice.cannotDeleteRoot"));
       return;
     }
     removeTopic(this.root, id);
@@ -3125,6 +3545,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   }
   rebuildAndSelect(id) {
     this.rebuild();
+    this.revealNode(id);
     this.select(id);
     this.startEdit(id);
   }
@@ -3133,14 +3554,37 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     this.render();
     this.dirty = true;
     this.refreshHeader();
-    this.fitView();
     this.maybeAutoSave();
+  }
+  /**
+   * 将指定节点平移进当前视口（仅在它当前完全不可见时）；
+   * 保持缩放比例不变，仅调整 tx/ty，避免「放大后操作就重置画布」的问题。
+   */
+  revealNode(id) {
+    if (!this.root) return;
+    const node = findTopic(this.root, id);
+    const pos = this.positions.get(id);
+    if (!node || !pos) return;
+    const rect = this.svg.getBoundingClientRect();
+    const cw = rect.width || 800;
+    const ch3 = rect.height || 600;
+    const sx = this.tx + pos.x * this.scale;
+    const sy = this.ty + pos.y * this.scale;
+    const w = this.nodeWidth(node) * this.scale;
+    const h = this.nodeBoxHeight(node) * this.scale;
+    const margin = 24;
+    const onScreen = sx - w / 2 > margin && sx + w / 2 < cw - margin && sy - h / 2 > margin && sy + h / 2 < ch3 - margin;
+    if (onScreen) return;
+    this.tx = cw / 2 - pos.x * this.scale;
+    this.ty = ch3 / 2 - pos.y * this.scale;
+    this.applyTransform();
   }
   setLayout(key) {
     if (this.currentLayout === key || !this.root) return;
     this.currentLayout = key;
     this.root["structure-class"] = LAYOUTS[key].structureClass;
     this.rebuild();
+    this.fitView();
     this.renderSidePanel();
   }
   // 切换画布样式（任一项）
@@ -3175,15 +3619,15 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     });
     this.canvasStyle.theme = "pastel";
     writeCanvasStyle(this.root, this.canvasStyle);
-    new import_obsidian.Notice("\u5DF2\u6309\u5206\u652F\u81EA\u52A8\u67D3\u8272\uFF08" + kids.length + " \u4E2A\u5206\u652F\uFF09");
+    new import_obsidian3.Notice(t("notice.autoColored", { count: String(kids.length) }));
     this.rebuild();
     this.renderSidePanel();
   }
   clearAllColors() {
     if (!this.root) return;
-    const walk = (t) => {
-      delete t._color;
-      for (const k of attachedChildren(t)) walk(k);
+    const walk = (t2) => {
+      delete t2._color;
+      for (const k of attachedChildren(t2)) walk(k);
     };
     walk(this.root);
     this.canvasStyle.theme = "classic";
@@ -3192,7 +3636,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     this.renderSidePanel();
   }
   startEdit(id) {
-    var _a2;
+    var _a3;
     if (!this.root) return;
     const node = findTopic(this.root, id);
     if (!node) return;
@@ -3209,9 +3653,9 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     }
     const input = newEl("input");
     input.className = "mm-edit-input";
-    input.value = (_a2 = node.title) != null ? _a2 : "";
+    input.value = (_a3 = node.title) != null ? _a3 : "";
     const editDepth = this.depthOf(node);
-    const editBoxH = this.boxHeightOf(editDepth);
+    const editBoxH = this.nodeBoxHeight(node);
     input.setCssStyles({ left: this.tx + (pos.x - this.nodeWidth(node) / 2) * this.scale + "px" });
     input.setCssStyles({ top: this.ty + (pos.y - editBoxH / 2) * this.scale + "px" });
     input.setCssStyles({ width: this.nodeWidth(node) * this.scale + "px" });
@@ -3336,13 +3780,6 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     }
     this.contentEl.setCssStyles({ height: "" });
   }
-  // ---------- 平移 / 缩放 ----------
-  // 命中判定：target 是根节点 div 自身或它的子元素
-  isTargetOnRoot(target) {
-    if (!target || !this.root) return false;
-    const rootEl = this.nodeEls.get(this.root.id);
-    return !!rootEl && (rootEl === target || rootEl.contains(target));
-  }
   // ---------- 缩略图预览 ----------
   mapBounds() {
     if (this.positions.size === 0) return null;
@@ -3358,7 +3795,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     return { minX, minY, maxX, maxY };
   }
   updateMinimap() {
-    var _a2;
+    var _a3;
     if (!this.minimapSvg) return;
     while (this.minimapSvg.firstChild)
       this.minimapSvg.removeChild(this.minimapSvg.firstChild);
@@ -3374,7 +3811,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const toY = (y) => pad + (y - b.minY) * s;
     for (const [id, pos] of this.positions) {
       const node = this.root ? findTopic(this.root, id) : null;
-      const isRoot = (node == null ? void 0 : node.id) === ((_a2 = this.root) == null ? void 0 : _a2.id);
+      const isRoot = (node == null ? void 0 : node.id) === ((_a3 = this.root) == null ? void 0 : _a3.id);
       const col = node ? this.resolveColor(node) : null;
       const r = svgEl("rect", {
         x: String(toX(pos.x - this.nodeWidth(node) / 2)),
@@ -3407,7 +3844,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   exportSVG() {
     const svg = this.buildExportSVG();
     if (!svg) {
-      new import_obsidian.Notice("\u6CA1\u6709\u53EF\u5BFC\u51FA\u7684\u5185\u5BB9");
+      new import_obsidian3.Notice(t("notice.noExportContent"));
       return;
     }
     this.writeExportFile(svg, "svg");
@@ -3415,7 +3852,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   async exportPNG() {
     const svg = this.buildExportSVG();
     if (!svg) {
-      new import_obsidian.Notice("\u6CA1\u6709\u53EF\u5BFC\u51FA\u7684\u5185\u5BB9");
+      new import_obsidian3.Notice(t("notice.noExportContent"));
       return;
     }
     const b = this.mapBounds();
@@ -3432,7 +3869,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       canvas.height = h * scale;
       const ctx = canvas.getContext("2d");
       if (!ctx) {
-        new import_obsidian.Notice("PNG \u5BFC\u51FA\u5931\u8D25\uFF1A\u65E0\u6CD5\u521B\u5EFA\u753B\u5E03");
+        new import_obsidian3.Notice(t("notice.pngFailCanvas"));
         URL.revokeObjectURL(url);
         return;
       }
@@ -3440,7 +3877,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       ctx.drawImage(img, 0, 0);
       canvas.toBlob((out) => {
         if (!out) {
-          new import_obsidian.Notice("PNG \u5BFC\u51FA\u5931\u8D25");
+          new import_obsidian3.Notice(t("notice.pngFail"));
           URL.revokeObjectURL(url);
           return;
         }
@@ -3451,14 +3888,14 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       }, "image/png");
     };
     img.onerror = () => {
-      new import_obsidian.Notice("PNG \u5BFC\u51FA\u5931\u8D25");
+      new import_obsidian3.Notice(t("notice.pngFail"));
       URL.revokeObjectURL(url);
     };
     img.src = url;
   }
   // 用纯 SVG（rect + text）重建整图，便于独立导出（不依赖 Obsidian CSS）
   buildExportSVG() {
-    var _a2;
+    var _a3;
     if (!this.root || this.positions.size === 0) return "";
     const b = this.mapBounds();
     const pad = 20;
@@ -3481,7 +3918,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
         if (!cp) return;
         const color = this.edgeColor(node, i) || "#b0b8c4";
         parts.push(
-          `<path d="${edgePath(pos, cp, this.nodeWidth(node), this.nodeWidth(k), this.nh, this.currentLayout)}" fill="none" stroke="${color}" stroke-width="2"/>`
+          `<path d="${edgePath(pos, cp, this.nodeWidth(node), this.nodeWidth(k), this.nodeBoxHeight(node), this.nodeBoxHeight(k), this.currentLayout)}" fill="none" stroke="${color}" stroke-width="2"/>`
         );
       });
     }
@@ -3530,7 +3967,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       }
       parts.push(
         `<text x="${textX}" y="${pos.y + 5}" font-size="${this.canvasStyle.compact ? 12 : 14}" fill="${textColor}" text-anchor="${anchor}" font-family="sans-serif">${escapeXml(
-          (_a2 = node.title) != null ? _a2 : ""
+          (_a3 = node.title) != null ? _a3 : ""
         )}</text>`
       );
     }
@@ -3539,7 +3976,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
   }
   async writeExportFile(data, ext) {
     if (!this.file) {
-      new import_obsidian.Notice("\u6CA1\u6709\u6253\u5F00\u7684\u6587\u4EF6");
+      new import_obsidian3.Notice(t("notice.noOpenFile"));
       return;
     }
     const base = this.file.path.replace(/\.xmind$/i, "");
@@ -3552,9 +3989,9 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     try {
       if (ext === "svg") await this.app.vault.create(path, data);
       else await this.app.vault.createBinary(path, data);
-      new import_obsidian.Notice("\u5DF2\u5BFC\u51FA " + path);
+      new import_obsidian3.Notice(t("notice.exported", { path }));
     } catch (e) {
-      new import_obsidian.Notice("\u5BFC\u51FA\u5931\u8D25\uFF1A" + e.message);
+      new import_obsidian3.Notice(t("notice.exportFail", { msg: e.message }));
     }
   }
   // ---------- 侧栏 ----------
@@ -3572,7 +4009,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const content = this.sideContent;
     const section1 = content.createDiv({ cls: "mm-side-section" });
     const title1 = section1.createDiv({ cls: "mm-side-section-title" });
-    title1.createEl("span", { text: "\u601D\u7EF4\u5BFC\u56FE" });
+    title1.createEl("span", { text: t("side.section.mindmap") });
     const thumbs = section1.createDiv({ cls: "mm-thumbs-grid" });
     for (const key of LAYOUT_ORDER) {
       const def = LAYOUTS[key];
@@ -3586,22 +4023,22 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     }
     const section2 = content.createDiv({ cls: "mm-side-section" });
     const title2 = section2.createDiv({ cls: "mm-side-section-title" });
-    title2.createEl("span", { text: "\u753B\u5E03\u6837\u5F0F" });
+    title2.createEl("span", { text: t("side.section.canvasStyle") });
     this.makeToggleRow(
       section2,
-      "\u5F69\u8679\u5206\u652F",
+      t("side.canvas.rainbow"),
       this.canvasStyle.rainbow,
       (v) => this.updateCanvasStyle({ rainbow: v })
     );
     this.makeToggleRow(
       section2,
-      "\u7D27\u51D1\u5E03\u5C40",
+      t("side.canvas.compact"),
       this.canvasStyle.compact,
       (v) => this.updateCanvasStyle({ compact: v })
     );
     this.makeToggleRow(
       section2,
-      "\u5168\u5C4F\u663E\u793A",
+      t("side.canvas.fullscreen"),
       this.canvasStyle.fullscreen,
       (v) => this.updateCanvasStyle({ fullscreen: v })
     );
@@ -3609,10 +4046,10 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       const node = findTopic(this.root, this.selectedId);
       const section3 = content.createDiv({ cls: "mm-side-section" });
       const title3 = section3.createDiv({ cls: "mm-side-section-title" });
-      title3.createEl("span", { text: "\u8282\u70B9\u6837\u5F0F" });
+      title3.createEl("span", { text: t("side.section.nodeStyle") });
       if (node) {
         const nameRow = section3.createDiv({ cls: "mm-node-style-name" });
-        nameRow.textContent = "\u5F53\u524D\uFF1A" + (node.title || "(\u7A7A)");
+        nameRow.textContent = t("side.node.current", { name: node.title || t("default.emptyText") });
         const swatches = section3.createDiv({ cls: "mm-swatches" });
         for (const c of NODE_PALETTE) {
           const sw = swatches.createDiv({ cls: "mm-swatch" });
@@ -3630,21 +4067,21 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
         );
         pickerRow.createEl("span", {
           cls: "mm-picker-label",
-          text: "\u81EA\u5B9A\u4E49\u989C\u8272"
+          text: t("side.node.customColor")
         });
         const btnClear = section3.createEl("button", {
           cls: "mm-style-btn",
-          text: "\u6E05\u9664\u6B64\u8282\u70B9\u989C\u8272"
+          text: t("side.node.clearColor")
         });
         btnClear.addEventListener("click", () => this.setNodeColor(null));
         const btnAuto = section3.createEl("button", {
           cls: "mm-style-btn",
-          text: "\u6309\u5206\u652F\u81EA\u52A8\u67D3\u8272"
+          text: t("side.node.autoColor")
         });
         btnAuto.addEventListener("click", () => this.autoColorBranches());
         const btnClearAll = section3.createEl("button", {
           cls: "mm-style-btn",
-          text: "\u6E05\u9664\u6240\u6709\u8282\u70B9\u989C\u8272"
+          text: t("side.node.clearAllColors")
         });
         btnClearAll.addEventListener("click", () => this.clearAllColors());
       }
@@ -3653,13 +4090,13 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       const stats = this.collectStats();
       const section4 = content.createDiv({ cls: "mm-side-section" });
       const title4 = section4.createDiv({ cls: "mm-side-section-title" });
-      title4.createEl("span", { text: "\u4FE1\u606F" });
+      title4.createEl("span", { text: t("side.section.info") });
       const info = section4.createDiv({ cls: "mm-info" });
-      info.createEl("div", { text: `\u4E3B\u9898\u6570\uFF1A${stats.topicCount}` });
-      info.createEl("div", { text: `\u6700\u5927\u6DF1\u5EA6\uFF1A${stats.maxDepth}` });
-      info.createEl("div", { text: `\u5E26\u6807\u8BB0\u7684\u8282\u70B9\uFF1A${stats.markedCount}` });
-      info.createEl("div", { text: `\u5E26\u8D34\u7EB8\u7684\u8282\u70B9\uFF1A${stats.stickerCount}` });
-      info.createEl("div", { text: `\u5E26\u989C\u8272\u7684\u8282\u70B9\uFF1A${stats.coloredCount}` });
+      info.createEl("div", { text: t("side.stats.topics", { count: String(stats.topicCount) }) });
+      info.createEl("div", { text: t("side.stats.maxDepth", { depth: String(stats.maxDepth) }) });
+      info.createEl("div", { text: t("side.stats.marked", { count: String(stats.markedCount) }) });
+      info.createEl("div", { text: t("side.stats.stickers", { count: String(stats.stickerCount) }) });
+      info.createEl("div", { text: t("side.stats.colored", { count: String(stats.coloredCount) }) });
     }
   }
   makeToggleRow(parent, label, value, onChange) {
@@ -3676,7 +4113,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const content = this.sideContent;
     if (!this.selectedId) {
       const hint = content.createDiv({ cls: "mm-marker-empty" });
-      hint.textContent = "\u9009\u4E2D\u4E00\u4E2A\u8282\u70B9\u540E\uFF0C\u70B9\u51FB\u4E0B\u65B9\u6807\u8BB0\u5373\u53EF\u7ED9\u8BE5\u8282\u70B9\u6DFB\u52A0\u6216\u79FB\u9664\u6807\u8BB0\u3002";
+      hint.textContent = t("side.marker.emptyHint");
       return;
     }
     const node = findTopic(this.root, this.selectedId);
@@ -3684,15 +4121,15 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const header = content.createDiv({ cls: "mm-marker-header" });
     header.createEl("div", {
       cls: "mm-marker-header-title",
-      text: "\u5F53\u524D\u8282\u70B9"
+      text: t("side.currentNode")
     });
     header.createEl("div", {
       cls: "mm-marker-header-name",
-      text: node.title || "(\u7A7A)"
+      text: node.title || t("default.emptyText")
     });
     const clearBtn = header.createEl("button", {
       cls: "mm-marker-clear",
-      text: "\u6E05\u9664\u5168\u90E8"
+      text: t("side.clearAll")
     });
     clearBtn.addEventListener("click", () => {
       if (!node) return;
@@ -3727,7 +4164,7 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const content = this.sideContent;
     if (!this.selectedId) {
       const hint = content.createDiv({ cls: "mm-marker-empty" });
-      hint.textContent = "\u9009\u4E2D\u4E00\u4E2A\u8282\u70B9\u540E\uFF0C\u70B9\u51FB\u4E0B\u65B9\u8D34\u7EB8\u5373\u53EF\u7ED9\u8BE5\u8282\u70B9\u6DFB\u52A0\u6216\u79FB\u9664\u8D34\u7EB8\u3002";
+      hint.textContent = t("side.sticker.emptyHint");
       return;
     }
     const node = findTopic(this.root, this.selectedId);
@@ -3735,15 +4172,15 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     const header = content.createDiv({ cls: "mm-marker-header" });
     header.createEl("div", {
       cls: "mm-marker-header-title",
-      text: "\u5F53\u524D\u8282\u70B9"
+      text: t("side.currentNode")
     });
     header.createEl("div", {
       cls: "mm-marker-header-name",
-      text: node.title || "(\u7A7A)"
+      text: node.title || t("default.emptyText")
     });
     const clearBtn = header.createEl("button", {
       cls: "mm-marker-clear",
-      text: "\u6E05\u9664\u5168\u90E8"
+      text: t("side.clearAll")
     });
     clearBtn.addEventListener("click", () => {
       setStickers(node, []);
@@ -3775,14 +4212,14 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
     let markedCount = 0;
     let stickerCount = 0;
     let coloredCount = 0;
-    const walk = (t, depth) => {
+    const walk = (t2, depth) => {
       topicCount++;
       maxDepth = Math.max(maxDepth, depth);
-      if (getMarkerIds(t).length > 0) markedCount++;
-      if (getStickers(t).length > 0) stickerCount++;
-      if (typeof t._color === "string")
+      if (getMarkerIds(t2).length > 0) markedCount++;
+      if (getStickers(t2).length > 0) stickerCount++;
+      if (typeof t2._color === "string")
         coloredCount++;
-      for (const k of attachedChildren(t)) walk(k, depth + 1);
+      for (const k of attachedChildren(t2)) walk(k, depth + 1);
     };
     if (this.root) walk(this.root, 0);
     return { topicCount, maxDepth, markedCount, stickerCount, coloredCount };
@@ -3816,29 +4253,27 @@ var _MindMapView = class _MindMapView extends import_obsidian.FileView {
       await this.app.vault.modifyBinary(this.file, data);
       this.dirty = false;
       this.refreshHeader();
-      new import_obsidian.Notice("\u601D\u7EF4\u5BFC\u56FE\u5DF2\u4FDD\u5B58");
+      new import_obsidian3.Notice(t("notice.saved"));
     } catch (e) {
-      new import_obsidian.Notice("\u4FDD\u5B58\u5931\u8D25\uFF1A" + e.message);
+      new import_obsidian3.Notice(t("notice.saveFail", { msg: e.message }));
     }
   }
 };
-// ---------- 工具栏：图标（Obsidian 官方渲染：setIcon / getIcon） ----------
-// 每个操作提供一组候选 lucide 图标名（按偏好排序）。运行时用 Obsidian 官方的
-// getIcon() 选出一个确定存在的名称，再交给 setIcon() 渲染，保证图标一定显示、
-// 不出现空灰框。候选名均取自 Obsidian 内置 lucide 图标集。
-__publicField(_MindMapView, "ICONS", {
-  fitView: ["maximize-2", "maximize"],
-  save: ["save"],
-  addChild: ["plus-circle", "plus"],
-  addSibling: ["plus"],
-  delete: ["trash-2", "trash"],
-  collapse: ["shrink", "minimize", "chevrons-down-up"],
-  more: ["more-horizontal", "dots-horizontal", "more-vertical"],
-  exportSvg: ["file-code-2", "file-code", "code-2", "code"],
-  exportPng: ["file-image", "image"],
-  minimap: ["layout-grid", "grid"],
-  panel: ["panel-right", "sidebar-right"]
-});
+// ---------- 工具栏：图标 ----------
+/** 所有工具栏图标名称（业务键，实际注册 ID 在 src/icons.ts 中） */
+__publicField(_MindMapView, "ICON_NAMES", [
+  "fitView",
+  "save",
+  "addChild",
+  "addSibling",
+  "delete",
+  "collapse",
+  "more",
+  "exportSvg",
+  "exportPng",
+  "minimap",
+  "panel"
+]);
 var MindMapView = _MindMapView;
 function makeThumbSvg(kind, active) {
   const stroke = active ? "var(--interactive-accent)" : "var(--text-muted)";
@@ -3958,7 +4393,7 @@ function makeThumbSvg(kind, active) {
 function escapeXml(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
-function edgePath(p, c, wP, wC, nh, layout) {
+function edgePath(p, c, wP, wC, hP, hC, layout) {
   if (c.side === 3) {
     const x12 = p.x - wP / 2;
     const y12 = p.y;
@@ -3968,9 +4403,9 @@ function edgePath(p, c, wP, wC, nh, layout) {
   }
   if (c.side === 2) {
     const x12 = p.x;
-    const y12 = p.y + nh / 2;
+    const y12 = p.y + hP / 2;
     const x22 = c.x;
-    const y22 = c.y - nh / 2;
+    const y22 = c.y - hC / 2;
     const mx2 = (x12 + x22) / 2;
     return `M ${x12} ${y12} L ${mx2} ${y12} L ${mx2} ${y22} L ${x22} ${y22}`;
   }
@@ -3984,9 +4419,9 @@ function edgePath(p, c, wP, wC, nh, layout) {
   }
   if (p.side === 0 && c.side === 0) {
     const x12 = p.x;
-    const y12 = p.y + nh / 2;
+    const y12 = p.y + hP / 2;
     const x22 = c.x;
-    const y22 = c.y - nh / 2;
+    const y22 = c.y - hC / 2;
     const midY = (y12 + y22) / 2;
     return `M ${x12} ${y12} L ${x12} ${midY} L ${x22} ${midY} L ${x22} ${y22}`;
   }
@@ -4009,7 +4444,7 @@ var DEFAULT_SETTINGS = {
   showMinimap: false,
   defaultZoom: "fit"
 };
-var MindMapSettingTab = class extends import_obsidian2.PluginSettingTab {
+var MindMapSettingTab = class extends import_obsidian4.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     __publicField(this, "plugin");
@@ -4018,27 +4453,27 @@ var MindMapSettingTab = class extends import_obsidian2.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian2.Setting(containerEl).setName("\u5E38\u89C4").setHeading();
-    new import_obsidian2.Setting(containerEl).setName("\u81EA\u52A8\u4FDD\u5B58").setDesc("\u7F16\u8F91\u601D\u7EF4\u5BFC\u56FE\u65F6\u81EA\u52A8\u4FDD\u5B58\u66F4\u6539\uFF0C\u65E0\u9700\u624B\u52A8\u70B9\u51FB\u4FDD\u5B58\u6309\u94AE").addToggle((toggle) => {
+    new import_obsidian4.Setting(containerEl).setName(t("settings.general")).setHeading();
+    new import_obsidian4.Setting(containerEl).setName(t("settings.autoSave.name")).setDesc(t("settings.autoSave.desc")).addToggle((toggle) => {
       toggle.setValue(this.plugin.settings.autoSave).onChange(async (value) => {
         this.plugin.settings.autoSave = value;
         await this.plugin.saveSettings();
       });
     });
-    new import_obsidian2.Setting(containerEl).setName("\u81EA\u52A8\u4FDD\u5B58\u95F4\u9694").setDesc("\u81EA\u52A8\u4FDD\u5B58\u7684\u65F6\u95F4\u95F4\u9694\uFF08\u79D2\uFF09").addSlider(
+    new import_obsidian4.Setting(containerEl).setName(t("settings.autoSaveInterval.name")).setDesc(t("settings.autoSaveInterval.desc")).addSlider(
       (slider) => slider.setLimits(10, 300, 10).setValue(this.plugin.settings.autoSaveInterval).setDynamicTooltip().onChange(async (value) => {
         this.plugin.settings.autoSaveInterval = value;
         await this.plugin.saveSettings();
       })
     ).addExtraButton(
-      (btn) => btn.setIcon("reset").setTooltip("\u6062\u590D\u9ED8\u8BA4\u503C (30\u79D2)").onClick(async () => {
+      (btn) => btn.setIcon("reset").setTooltip(t("settings.resetInterval", { seconds: String(DEFAULT_SETTINGS.autoSaveInterval) })).onClick(async () => {
         this.plugin.settings.autoSaveInterval = DEFAULT_SETTINGS.autoSaveInterval;
         await this.plugin.saveSettings();
         this.display();
       })
     );
-    new import_obsidian2.Setting(containerEl).setName("\u5916\u89C2\u4E0E\u9ED8\u8BA4").setHeading();
-    new import_obsidian2.Setting(containerEl).setName("\u9ED8\u8BA4\u5E03\u5C40").setDesc("\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE\u65F6\u4F7F\u7528\u7684\u9ED8\u8BA4\u5E03\u5C40").addDropdown((dd) => {
+    new import_obsidian4.Setting(containerEl).setName(t("settings.appearance")).setHeading();
+    new import_obsidian4.Setting(containerEl).setName(t("settings.defaultLayout.name")).setDesc(t("settings.defaultLayout.desc")).addDropdown((dd) => {
       for (const key of LAYOUT_ORDER) {
         dd.addOption(key, LAYOUTS[key].label);
       }
@@ -4048,31 +4483,31 @@ var MindMapSettingTab = class extends import_obsidian2.PluginSettingTab {
         await this.plugin.saveSettings();
       });
     });
-    new import_obsidian2.Setting(containerEl).setName("\u7D27\u51D1\u6A21\u5F0F").setDesc("\u65B0\u5EFA\u5BFC\u56FE\u9ED8\u8BA4\u4F7F\u7528\u7D27\u51D1\u5E03\u5C40\uFF08\u95F4\u8DDD\u66F4\u5C0F\uFF0C\u53EF\u663E\u793A\u66F4\u591A\u5185\u5BB9\uFF09\u3002\u5DF2\u6709\u6587\u4EF6\u4EE5\u81EA\u8EAB\u8BBE\u7F6E\u4E3A\u51C6\u3002").addToggle((toggle) => {
+    new import_obsidian4.Setting(containerEl).setName(t("settings.compactMode.name")).setDesc(t("settings.compactMode.desc")).addToggle((toggle) => {
       toggle.setValue(this.plugin.settings.compactMode).onChange(async (value) => {
         this.plugin.settings.compactMode = value;
         await this.plugin.saveSettings();
       });
     });
-    new import_obsidian2.Setting(containerEl).setName("\u4E3B\u9898\u914D\u8272").setDesc("\u65B0\u5EFA\u5BFC\u56FE\u65F6\u7684\u9ED8\u8BA4\u5206\u652F\u914D\u8272\u3002\u5DF2\u6709\u6587\u4EF6\u4EE5\u81EA\u8EAB\u8BBE\u7F6E\u4E3A\u51C6\u3002").addDropdown((dd) => {
-      dd.addOption("classic", "\u7ECF\u5178\uFF08\u767D\u5E95\u4E0D\u67D3\u8272\uFF09");
-      dd.addOption("rainbow", "\u5F69\u8679\u5206\u652F\uFF08\u4E00\u7EA7\u4E03\u5F69\uFF09");
-      dd.addOption("pastel", "\u67D4\u548C\u8272\u677F\uFF08\u4E00\u7EA7\u67D4\u548C\u8272\uFF09");
+    new import_obsidian4.Setting(containerEl).setName(t("settings.theme.name")).setDesc(t("settings.theme.desc")).addDropdown((dd) => {
+      dd.addOption("classic", t("settings.theme.classic"));
+      dd.addOption("rainbow", t("settings.theme.rainbow"));
+      dd.addOption("pastel", t("settings.theme.pastel"));
       dd.setValue(this.plugin.settings.theme);
       dd.onChange(async (value) => {
         this.plugin.settings.theme = value;
         await this.plugin.saveSettings();
       });
     });
-    new import_obsidian2.Setting(containerEl).setName("\u663E\u793A\u7F29\u7565\u56FE").setDesc("\u6253\u5F00\u5BFC\u56FE\u65F6\u662F\u5426\u663E\u793A\u53F3\u4E0B\u89D2\u7F29\u7565\u56FE\uFF08mini map\uFF09\u3002\u5DE5\u5177\u680F\u300C\u7F29\u7565\u56FE\u300D\u6309\u94AE\u53EF\u4E34\u65F6\u5207\u6362\u3002").addToggle((toggle) => {
+    new import_obsidian4.Setting(containerEl).setName(t("settings.showMinimap.name")).setDesc(t("settings.showMinimap.desc")).addToggle((toggle) => {
       toggle.setValue(this.plugin.settings.showMinimap).onChange(async (value) => {
         this.plugin.settings.showMinimap = value;
         await this.plugin.saveSettings();
       });
     });
-    new import_obsidian2.Setting(containerEl).setName("\u9ED8\u8BA4\u7F29\u653E").setDesc("\u6253\u5F00\u5BFC\u56FE\u65F6\u7684\u521D\u59CB\u7F29\u653E\uFF1A\u9002\u5E94\u89C6\u56FE\uFF08\u81EA\u52A8\u7F29\u653E\u81F3\u5168\u5C4F\u53EF\u89C1\uFF09\u6216 100%\uFF08\u539F\u59CB\u5927\u5C0F\uFF0C\u53EF\u624B\u52A8\u62D6\u62FD/\u6EDA\u8F6E\u7F29\u653E\uFF09\u3002").addDropdown((dd) => {
-      dd.addOption("fit", "\u9002\u5E94\u89C6\u56FE\uFF08\u81EA\u52A8\u7F29\u653E\uFF09");
-      dd.addOption("100", "100%\uFF08\u539F\u59CB\u5927\u5C0F\uFF09");
+    new import_obsidian4.Setting(containerEl).setName(t("settings.defaultZoom.name")).setDesc(t("settings.defaultZoom.desc")).addDropdown((dd) => {
+      dd.addOption("fit", t("settings.defaultZoom.fit"));
+      dd.addOption("100", t("settings.defaultZoom.oneHundred"));
       dd.setValue(this.plugin.settings.defaultZoom);
       dd.onChange(async (value) => {
         this.plugin.settings.defaultZoom = value;
@@ -4082,15 +4517,15 @@ var MindMapSettingTab = class extends import_obsidian2.PluginSettingTab {
     containerEl.createDiv({ cls: "setting-item-description" }, (div) => {
       const p = div.createEl("p");
       p.setCssStyles({ marginTop: "12px", color: "var(--text-muted)", fontSize: "13px" });
-      p.append("\u5F53\u524D\u95F4\u9694\uFF1A");
+      p.append(t("settings.currentInterval"));
       const strong = p.createEl("strong");
-      strong.textContent = `${this.plugin.settings.autoSaveInterval} \u79D2`;
+      strong.textContent = t("settings.intervalSeconds", { count: String(this.plugin.settings.autoSaveInterval) });
       p.createEl("br");
-      p.append("\u5FEB\u6377\u952E\uFF1ACtrl+S \u624B\u52A8\u4FDD\u5B58 \xB7 Tab \u6DFB\u52A0\u5B50\u4E3B\u9898 \xB7 Enter \u6DFB\u52A0\u540C\u7EA7 \xB7 Delete \u5220\u9664\u8282\u70B9");
+      p.append(t("settings.shortcuts"));
     });
   }
 };
-var FileNameModal = class extends import_obsidian2.Modal {
+var FileNameModal = class extends import_obsidian4.Modal {
   constructor(app, defaultName, onSubmit) {
     super(app);
     __publicField(this, "value");
@@ -4100,23 +4535,23 @@ var FileNameModal = class extends import_obsidian2.Modal {
   }
   onOpen() {
     const { contentEl } = this;
-    new import_obsidian2.Setting(contentEl).setName("\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE").setHeading();
+    new import_obsidian4.Setting(contentEl).setName(t("modal.newMindmap.title")).setHeading();
     const input = contentEl.createEl("input", {
       type: "text",
       value: this.value,
-      placeholder: "\u6587\u4EF6\u540D\uFF08\u65E0\u9700\u6269\u5C55\u540D\uFF09"
+      placeholder: t("modal.newMindmap.placeholder")
     });
     input.addClass("mm-filename-input");
     input.focus();
     input.select();
     const hint = contentEl.createEl("p", {
       cls: "setting-item-description",
-      text: "\u5C06\u521B\u5EFA .xmind \u6587\u4EF6\uFF0C\u53EF\u5728 Obsidian \u4E2D\u53CC\u51FB\u6253\u5F00\u7F16\u8F91\u3002"
+      text: t("modal.newMindmap.hint")
     });
     hint.setCssStyles({ margin: "8px 0" });
     const row = contentEl.createDiv({ cls: "modal-button-row" });
-    const ok = row.createEl("button", { text: "\u521B\u5EFA", cls: "mod-cta" });
-    const cancel = row.createEl("button", { text: "\u53D6\u6D88" });
+    const ok = row.createEl("button", { text: t("modal.create"), cls: "mod-cta" });
+    const cancel = row.createEl("button", { text: t("modal.cancel") });
     ok.setCssStyles({ marginRight: "8px" });
     const submit = () => {
       const v = input.value.trim();
@@ -4140,7 +4575,7 @@ var FileNameModal = class extends import_obsidian2.Modal {
     this.contentEl.empty();
   }
 };
-var MindMapPlugin = class extends import_obsidian2.Plugin {
+var MindMapPlugin = class extends import_obsidian4.Plugin {
   constructor() {
     super(...arguments);
     __publicField(this, "settings", DEFAULT_SETTINGS);
@@ -4148,26 +4583,31 @@ var MindMapPlugin = class extends import_obsidian2.Plugin {
   async onload() {
     await this.loadSettings();
     setPluginInstance(this);
+    registerToolbarIcons();
+    (0, import_obsidian4.addIcon)(
+      "mindmap",
+      `<g transform="scale(4.1666667)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8.2 11L16 6.6M8.2 13L16 17.4"/></g>`
+    );
     this.registerView(VIEW_TYPE_MINDMAP, (leaf) => new MindMapView(leaf));
     this.registerExtensions(["xmind"], VIEW_TYPE_MINDMAP);
     this.addSettingTab(new MindMapSettingTab(this.app, this));
     this.addCommand({
       id: "new-mindmap",
-      name: "\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE (.xmind)",
+      name: t("command.newMindmap"),
       callback: () => this.newMindMap()
     });
     this.registerEvent(
       this.app.workspace.on("file-menu", (menu, file) => {
         if (!file) return;
-        const targetFolder = file instanceof import_obsidian2.TFolder ? file : file.parent;
+        const targetFolder = file instanceof import_obsidian4.TFolder ? file : file.parent;
         menu.addItem(
-          (item) => item.setTitle("\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE").setIcon("git-graph").onClick(() => this.newMindMap(targetFolder))
+          (item) => item.setTitle(t("menu.newMindmap")).setIcon("mindmap").onClick(() => this.newMindMap(targetFolder))
         );
       })
     );
     this.addCommand({
       id: "save-mindmap",
-      name: "\u4FDD\u5B58\u5F53\u524D\u601D\u7EF4\u5BFC\u56FE",
+      name: t("command.saveMindmap"),
       checkCallback: (checking) => {
         const view = this.app.workspace.getActiveViewOfType(MindMapView);
         if (view) {
@@ -4179,7 +4619,7 @@ var MindMapPlugin = class extends import_obsidian2.Plugin {
     });
   }
   async newMindMap(targetFolder) {
-    let defaultName = "\u601D\u7EF4\u5BFC\u56FE";
+    let defaultName = t("default.mindMapName");
     if (targetFolder) {
       defaultName = targetFolder.name;
     } else {
@@ -4190,13 +4630,13 @@ var MindMapPlugin = class extends import_obsidian2.Plugin {
       try {
         await this.createMindMapFile(name, targetFolder);
       } catch (e) {
-        new import_obsidian2.Notice("\u65B0\u5EFA\u601D\u7EF4\u5BFC\u56FE\u5931\u8D25\uFF1A" + e.message);
+        new import_obsidian4.Notice(t("notice.createFail", { msg: e.message }));
         console.error(e);
       }
     }).open();
   }
   async createMindMapFile(rawName, targetFolder) {
-    let fname = (rawName || "\u601D\u7EF4\u5BFC\u56FE").trim();
+    let fname = (rawName || t("default.mindMapName")).trim();
     if (!fname.toLowerCase().endsWith(".xmind")) fname += ".xmind";
     let folder = "";
     if (targetFolder) {
@@ -4207,13 +4647,13 @@ var MindMapPlugin = class extends import_obsidian2.Plugin {
     }
     const path = folder ? `${folder}/${fname}` : fname;
     if (this.app.vault.getAbstractFileByPath(path)) {
-      new import_obsidian2.Notice("\u6587\u4EF6\u5DF2\u5B58\u5728\uFF1A" + path);
+      new import_obsidian4.Notice(t("notice.fileExists", { path }));
       return;
     }
     const rootTopic = {
       id: genId("topic"),
       class: "topic",
-      title: "\u4E2D\u5FC3\u4E3B\u9898",
+      title: t("default.centerTopic"),
       children: { attached: [] }
     };
     applyDefaultThemeToRoot(rootTopic, this.settings.theme, this.settings.compactMode);
@@ -4228,7 +4668,7 @@ var MindMapPlugin = class extends import_obsidian2.Plugin {
     const data = await serializeXMind(sheets);
     const file = await this.app.vault.createBinary(path, data);
     await this.app.workspace.getLeaf(true).openFile(file);
-    new import_obsidian2.Notice("\u5DF2\u521B\u5EFA " + path);
+    new import_obsidian4.Notice(t("notice.created", { path }));
   }
   // ---------- 设置管理 ----------
   async loadSettings() {

@@ -71,24 +71,35 @@
   flex-shrink: 0;
 }
 
-/* setIcon 注入的 lucide SVG 默认 24×24，需要缩放到按钮内容区（30-10=20px） */
-.mm-tb-action svg,
-.mm-tb-more-btn svg {
-  width: 18px;
-  height: 18px;
-  display: block;
-  color: inherit;
+.mm-tb-more-btn.is-active {
+  background: var(--interactive-hover);
 }
 
-/* 下拉菜单项中的 svg（与文字并排） */
-.mm-tb-menu-item svg {
-  width: 16px;
-  height: 16px;
+/* 工具栏图标按钮内的 SVG 尺寸
+   Obsidian 的 setIcon 渲染自定义 SVG 时会剥离 width/height 属性，
+   改用 .svg-icon 类的 CSS 尺寸；不加显式规则会被主题/全局 flex 容器覆盖塌缩为 0。
+   用 !important + min-* 强制生效，确保图标按 16×16 渲染。 */
+.mm-tb-action svg,
+.mm-tb-action .svg-icon,
+.mm-tb-more-btn svg,
+.mm-tb-more-btn .svg-icon {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  display: block;
   flex-shrink: 0;
 }
 
-.mm-tb-more-btn.is-active {
-  background: var(--interactive-hover);
+/* 下拉菜单项内的图标尺寸 */
+.mm-tb-menu-item svg,
+.mm-tb-menu-item .svg-icon {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  flex-shrink: 0;
+  display: block;
 }
 
 /* ---------- 更多下拉菜单项 ---------- */
@@ -263,9 +274,10 @@
   flex: 1;
   min-width: 0;
   text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
   word-break: break-word;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .mm-collapse-dot {
@@ -569,10 +581,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
 }
 
-.mm-marker-icon svg {
+.mm-marker-icon svg,
+.mm-marker-icon .mm-marker-svg {
   display: block;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
 }
 
 /* ---------- 工具栏按钮激活态 ---------- */

@@ -3,8 +3,8 @@
 A plugin to **view and interactively edit XMind mind maps** (`.xmind` format) inside Obsidian.
 
 - Plugin ID: `mindmap-xmind`
-- Version: `1.0.8`
-- Minimum Obsidian version: `1.4.0`
+- Version: `1.0.12`
+- Minimum Obsidian version: `1.7.2`
 - Supports desktop and mobile (not desktop-only)
 
 ---
@@ -12,8 +12,8 @@ A plugin to **view and interactively edit XMind mind maps** (`.xmind` format) in
 在 Obsidian 中**查看与交互编辑 XMind 思维导图**（`.xmind` 格式）的插件。
 
 - 插件 ID：`mindmap-xmind`
-- 版本：`1.0.8`
-- 最低 Obsidian 版本：`1.4.0`
+- 版本：`1.0.12`
+- 最低 Obsidian 版本：`1.7.2`
 - 支持桌面端、移动端（非桌面独占）
 
 ---
@@ -118,7 +118,6 @@ mindmap-xmind/
 │   ├── xmind.ts       # .xmind 文件读写解析
 │   ├── markers.ts     # 标记（图标）支持
 │   └── util.ts        # 工具函数
-└── sample-*.xmind     # 示例导图（功能/鱼骨图/组织架构/标记 等）
 ```
 
 ---
@@ -129,4 +128,4 @@ mindmap-xmind/
 
 ### 第三方依赖
 
-- **[JSZip](https://github.com/Stuk/jszip)**（MIT 许可证）：用于在浏览器中解析与生成 `.xmind`（ZIP 格式）文件，已随本插件一并打包分发，遵守其原始许可证。
+- **[fflate](https://github.com/101arrowz/fflate)**（MIT 许可证）：用于在浏览器中解析与生成 `.xmind`（ZIP 格式）文件，已随本插件一并打包分发，遵守其原始许可证。
